@@ -6,7 +6,6 @@ require 'is-static-files'
 require 'mini_magick'
 
 require_relative 'error'
-require_relative 'cache'
 
 module JekyllIS; end
 module JekyllIS::Images; end
@@ -123,7 +122,11 @@ class JekyllIS::Images::ImageInfo
     sha256 = Digest::SHA256::new
     sha256.update @source
     if image
-      sha256.update image.signature
+      File::open image.path do |file|
+        while chunk = file.read(65536)
+          sha256.update chunk
+        end
+      end
     end
     sha256.update transform_json
     digested = "#{ sha256.hexdigest }.#{ @transform[:format] }"
@@ -134,7 +137,7 @@ class JekyllIS::Images::ImageInfo
   def download_file url, limit = 3
     raise 'Too many redirects!' if limit <= 0
     uri = URI::parse url
-    path = @site.in_source_dir "#{ uri.host }/#{ @transform[:salt] || '-' }/#{ uri.path }_.#{ @transform[:format] }"
+    path = @site.in_source_dir "#{ CACHE_DIR }/#{ @transform[:salt] || '-' }/#{ uri.host }#{ uri.path }_.#{ @transform[:format] }"
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       request = Net::HTTP::Get::new uri
       http.request(request) do |response|
@@ -166,7 +169,10 @@ class JekyllIS::Images::ImageInfo
     content = File.read source_path
     doc = Nokogiri::XML(content)
     svg_node = doc.at_css 'svg'
-    error "Invalid SVG file: #{ source_path }"
+    unless svg_node
+      error "Invalid SVG file: #{ source_path }"
+      return nil
+    end
 
     # Чистка
     doc.xpath("//comment()").remove
@@ -206,7 +212,6 @@ class JekyllIS::Images::ImageInfo
     src_image ||= download
     return convert_svg src_image.path, target_path if @transform[:format] == 'svg'
     crop = @transform[:crop]
-    src_image.crop crop if crop
     fit = @transform[:fit]
     width = @transform[:width]
     height = @transform[:height]

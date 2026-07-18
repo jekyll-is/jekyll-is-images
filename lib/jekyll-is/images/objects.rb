@@ -117,8 +117,8 @@ class JekyllIS::Images::Image
 
   def detect_format
     src_format = @src.split('?')&.first&.split('#')&.first&.split('.')&.last&.downcase
-    src_format = 'jpeg' if result == 'jpg'
-    src_format = 'tiff' if result == 'tif'
+    src_format = 'jpeg' if src_format == 'jpg'
+    src_format = 'tiff' if src_format == 'tif'
     @page.data['__is_images_formats_map'] ||= formats_map
     @page.data['__is_images_formats_map'][src_format] || src_format
   end
@@ -193,6 +193,7 @@ class JekyllIS::Images::Image
     attributes = {}
     attributes['id'] = @id if @id
     attributes['alt'] = @attrs['alt']
+    attributes['loading'] = 'lazy' if @flags.delete?('lazy')
     @classes << '__is_images_image'
     @classes << '__is_images_gallery_item' if @figure && @figure.gallery?
     @flags.each do |flag|
@@ -203,7 +204,7 @@ class JekyllIS::Images::Image
     @styles['--is-images-aspect-ratio'] = image.aspect_ratio
     @styles['--is-images-scale'] = scale if scale
     attributes['style'] = @styles.map { |k, v| "#{k}:#{v};" }.join('')
-    "<img src=#{ image.url } #{ attributes.map { |k, v| "#{k}=\"#{v}\"" }.join(" ") }>"
+    "<img src=\"#{ image.url }\" #{ attributes.map { |k, v| "#{k}=\"#{v}\"" }.join(" ") }>"
   end
 
   def wrap_img_tag img_tag
@@ -259,7 +260,7 @@ class JekyllIS::Images::Figure
         image.apply_img child
       end
       @attrs.each do |k, v|
-        if k == 'quality' || k.start_with?('webp:') || k.start_with?('heic:') || k.start_with('jpeg:')
+        if k == 'quality' || k.start_with?('webp:') || k.start_with?('heic:') || k.start_with?('jpeg:')
           image.attrs[k] ||= v
         end
       end
@@ -290,7 +291,7 @@ class JekyllIS::Images::Figure
     attributes['class'] = @classes.join(' ')
     attributes['style'] = @styles.map { |k, v| "#{k}:#{v};" }.join('')
     caption = @caption && @caption != '' ? "<figcaption>#{ @caption }</figcaption>" : ''
-    "<figure #{ attributes.map { |k, v| "#{k}=\"#{v}\"" } }>\n#{ @children.map(&:to_html).join("\n") }\n</figure>"
+    "<figure #{ attributes.map { |k, v| "#{k}=\"#{v}\"" }.join(' ') }>\n#{ @children.map(&:to_html).join("\n") }\n</figure>"
   end
 
   def to_latex
