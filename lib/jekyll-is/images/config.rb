@@ -77,7 +77,7 @@ module JekyllIS::Images::Config
 
   Options = Data::define :quality, :defines
 
-  DEFINE_KEYS => {
+  DEFINE_KEYS = {
     'avif' => 'heic'
   }
 
