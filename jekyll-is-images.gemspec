@@ -1,13 +1,18 @@
+# frozen_string_literal: true
+
+require_relative 'lib/jekyll-is/images/info'
+
 Gem::Specification.new do |s|
-  s.name = "jekyll-is-images"
-  s.version = "0.8.0"
-  s.summary = "Images processing for Jekyll"
-  s.description = "Images processing for Jekyll."
-  s.authors = ["Ivan Shikhalev"]
-  s.email = ["shikhalev@gmail.com"]
-  s.files = Dir["lib/**/*", "README.md", "LICENSE"]
-  s.homepage = "https://github.com/jekyll-is/jekyll-is-images"
-  s.license = "LGPL-3.0-or-later"
+
+  s.name        =   JekyllIS::Images::Info::NAME
+  s.version     =   JekyllIS::Images::Info::VERSION
+  s.summary     =   JekyllIS::Images::Info::SUMMARY
+  s.description =   JekyllIS::Images::Info::SUMMARY + '.'
+  s.authors     = [ JekyllIS::Images::Info::AUTHOR  ]
+  s.email       = [ JekyllIS::Images::Info::EMAIL   ]
+  s.files       = Dir["lib/**/*", "README.md", "LICENSE"]
+  s.homepage    =   JekyllIS::Images::Info::HOMEPAGE
+  s.license     =   JekyllIS::Images::Info::LICENSE
 
   s.required_ruby_version = "~> 3.4"
 
