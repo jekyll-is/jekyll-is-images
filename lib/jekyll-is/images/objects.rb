@@ -2,6 +2,7 @@
 
 require 'set'
 
+require_relative 'config'
 require_relative 'error'
 require_relative 'image'
 
@@ -10,6 +11,7 @@ module JekyllIS::Images; end
 
 class JekyllIS::Images::Image
 
+  include JekyllIS::Images::Config
   include JekyllIS::Images::Error
 
   attr_reader :attrs, :flags, :styles, :src, :href, :figure
@@ -94,34 +96,6 @@ class JekyllIS::Images::Image
 
   private
 
-  def formats_map
-    page_formats = @page.data['image_format']
-    return { 'default' => page_formats.downcase } if page_formats.is_a?(String)
-    page_formats = if page_formats.is_a?(Hash)
-      page_formats.transform_keys { it.downcase }
-    else
-      {}
-    end
-    site_formats = @site.config.dig('is_images', 'image_format')
-    site_formats = case site_formats
-    when String
-      { 'default' => site_formats.downcase }
-    when Hash
-      site_formats.transform_keys { it.downcase }
-    else
-      {}
-    end
-    site_formats.merge page_formats
-  end
-
-  def detect_format
-    src_format = @src.split('?')&.first&.split('#')&.first&.split('.')&.last&.downcase
-    src_format = 'jpeg' if src_format == 'jpg'
-    src_format = 'tiff' if src_format == 'tif'
-    @page.data['__is_images_formats_map'] ||= formats_map
-    @page.data['__is_images_formats_map'][src_format] || @page.data['__is_images_formats_map']['default'] || src_format
-  end
-
   def element_category
     if @figure && @figure.gallery?
       :block
@@ -134,53 +108,23 @@ class JekyllIS::Images::Image
     # Вычисляем трансформацию...
     width = @attrs['width']&.to_i
     height = @attrs['height']&.to_i
-    scale = @attrs['scale']&.to_f
+    scale = @attrs['scale']&.to_r
     crop = @attrs['crop']
     salt = @attrs['salt']
     fit = @attrs['fit']
-    format = (@attrs['format'] || detect_format)&.downcase
+    format = (@attrs['format'] || detect_format(@src))&.downcase
     if @figure && @figure.gallery?
-      item_width = (@figure.attrs['image-width'] || @page.data['gallery_image_width'] || @site.config.dig('is_images', 'gallery_image_width'))&.to_i
-      item_height = (@figure.attrs['image-height'] || @page.data['gallery_image_height'] || @site.config.dig('is_images', 'gallery_image_height'))&.to_i
-      item_fit = @figure.attrs['image-fit'] || @page.data['gallery_image_fit'] || @site.config.dig('is_images', 'gallery_image_fit')
+      item_width = (@figure.attrs['image-width'] || config('gallery', 'image_width'))&.to_i
+      item_height = (@figure.attrs['image-height'] || config('gallery', 'image_height'))&.to_i
+      item_fit = @figure.attrs['image-fit'] || config('gallery', 'image_fit')
       width = item_width
       height = item_height
       fit = item_fit
-      scale = (@figure.attrs['image-scale'] || @page.data['gallery_image_scale'] || @site.config.dig('is_images', 'gallery_image_scale'))&.to_f
-    end
-    options = DEFAULT_OPTIONS[format]&.dup || {}
-    options_key = format == 'avif' ? 'heic' : format
-    site_options = @site.config.dig('is_images', 'format_options', format)
-    if site_options
-      site_options.each do |k, v|
-        if k == 'quality'
-          options[k] = v
-        else
-          options[options_key + ':' + k.tr('_', '-')] = v
-        end
-      end
-    end
-    page_options = @page.data.dig('format_options', format)
-    if page_options
-      page_options.each do |k, v|
-        if k == 'quality'
-          options[k] = v
-        else
-          options[options_key + ':' + k.tr('_', '-')] = v
-        end
-      end
-    end
-    @attrs.each do |k, v|
-      if k == 'quality'
-        options[k] = v
-      elsif k.start_with?(options_key + '-')
-        kk = k.sub(options_key + '-', options_key + ':')
-        options[kk] = v
-      end
+      scale = (@figure.attrs['image-scale'] || config['gallery', 'image_scale'])&.to_r
     end
     transform = {
       format: format,
-      options: options,
+      options: options(format, @attrs),
       width: width,
       height: height,
       scale: scale,

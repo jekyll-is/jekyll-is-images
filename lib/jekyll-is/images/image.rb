@@ -17,6 +17,7 @@ module JekyllIS::Images; end
 class JekyllIS::Images::ImageInfo
 
   include JekyllIS::Images::Error
+  include JekyllIS::Images::Config
 
   class << self
 
@@ -71,9 +72,6 @@ class JekyllIS::Images::ImageInfo
     self
   end
 
-  CACHE_DIR = '.is-images-cache'
-  URL_PREFIX = "img"
-
   private
 
   def from_file url, path
@@ -115,26 +113,18 @@ class JekyllIS::Images::ImageInfo
       end
     end
     sha256.update JSON::generate(transform, sort_keys: true)
-    digested = "#{ sha256.hexdigest }.#{ @transform[:format] }"
-    splitted = "#{ digested[0..1] }/#{ digested[2..3] }/#{ digested[4..] }"
-    return [ "/#{ url_prefix }/#{ splitted }", "#{ cache_dir }/processed/#{ splitted }" ]
+    digested = "#{ sha256.hexdigest }"
+    splitted = "#{ digested[0..3] }/#{ digested[4..7] }/#{ digested[8..(config(DIGITS_KEY).to_i + 7)] }.#{ @transform[:format] }"
+    return [ "/#{ target_path_prefix }/#{ splitted }", "#{ cache_path }/processed/#{ splitted }" ]
   rescue => ex
     error "Error with file #{ @source.inspect }: #{ ex.inspect }"
     return [ nil, nil ]
   end
 
-  def url_prefix
-    @site.config.dig('is_images', 'url_prefix') || URL_PREFIX
-  end
-
-  def cache_dir
-    @site.config.dig('is_images', 'cache_dir') || CACHE_DIR
-  end
-
   def download_file url, limit = 3, hashed: ''
     raise 'Too many redirects!' if limit <= 0
     uri = URI::parse url
-    path = @site.in_source_dir "#{ cache_dir }/downloads/#{ @transform[:salt] || '-' }/#{ hashed }"
+    path = @site.in_source_dir "#{ cache_path }/downloads/#{ @transform[:salt] || '-' }/#{ hashed }.src"
     return path if File.exist?(path)
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       request = Net::HTTP::Get::new uri
@@ -226,7 +216,7 @@ class JekyllIS::Images::ImageInfo
     end
     format = @transform[:format] || 'png'
     options = @transform[:options] || {}
-    quality = options.delete 'quality'
+    quality = options.quality
     image = MiniMagick::Image::open source_path
       image.combine_options do |img|
         img.crop crop if crop
@@ -234,8 +224,8 @@ class JekyllIS::Images::ImageInfo
         img.strip
         img.quality quality if quality
         img.colorspace 'sRGB'
-        options.each do |k, v|
-          img.define "#{ k }=#{ v }"
+        options.defines.each do |value|
+          img.define value
         end
       end
       image.format format

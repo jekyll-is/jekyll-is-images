@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JekyllIS
   module Images; end
 end
