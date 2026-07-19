@@ -76,24 +76,6 @@ class JekyllIS::Images::Image
     '' # TODO: implement
   end
 
-  DEFAULT_OPTIONS = {
-    'png'  => {},
-    'jpeg' => {
-      'quality' => '90'
-    },
-    'webp' => {
-      'quality' => '80',
-      'webp:method' => '6',
-      'webp:progressive' => 'true',
-      'webp:alpha-compression' => '1'
-    },
-    'avif' => {
-      'quality' => '70',
-      'heic:speed' => '2',
-      'heic:chroma-subsampling' => '4:2:0'
-    }
-  }
-
   private
 
   def element_category

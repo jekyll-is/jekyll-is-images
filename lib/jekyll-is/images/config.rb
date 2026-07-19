@@ -77,6 +77,10 @@ module JekyllIS::Images::Config
 
   Options = Data::define :quality, :defines
 
+  DEFINE_KEYS => {
+    'avif' => 'heic'
+  }
+
   def options format, attrs = {}
 
     default_values = DEFAULTS.dig(OPTIONS_KEY, format) || {}
@@ -90,7 +94,7 @@ module JekyllIS::Images::Config
     quality = attrs['quality'] || config_values.delete('quality')
 
     defines = {}
-    define_key = format == 'avif' ? 'heic' : format
+    define_key = DEFINE_KEYS[format] || format
     config_values.each do |k, v|
       defines[define_key + ':' + k.tr('_', '-')] = v
     end

@@ -94,15 +94,14 @@ class JekyllIS::Images::ImageInfo
     end
     @url = static.url
     image = MiniMagick::Image::open full
+    begin
       @width = image.width
       @height = image.height
       @aspect_ratio = @width.to_r / @height.to_r
+    ensure
       image.destroy!
-
+    end
     return self
-  rescue => ex
-    error "Error with file: #{ path.inspect }"
-    return nil
   end
 
   def source_digest
@@ -219,6 +218,7 @@ class JekyllIS::Images::ImageInfo
     options = @transform[:options] || {}
     quality = options.quality
     image = MiniMagick::Image::open source_path
+    begin
       image.combine_options do |img|
         img.crop crop if crop
         img.resize resize if resize
@@ -233,8 +233,9 @@ class JekyllIS::Images::ImageInfo
       target_full = @site.in_source_dir target_path
       FileUtils.mkdir_p File.dirname(target_full)
       image.write target_full
+    ensure
       image.destroy!
-
+    end
     target_path
   end
 
