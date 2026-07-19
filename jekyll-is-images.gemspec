@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "kramdown", "~> 2.5"
   s.add_dependency 'mini_magick', '~> 5.3.2'
+  s.add_dependency 'nokogiri', '~> 1.19.4'
   # s.add_dependency 'is-kramdown-hooked', path: '../is-kramdown-hooked'
 
   s.add_development_dependency "rspec", "~> 3.13"

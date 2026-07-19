@@ -67,8 +67,8 @@ class JekyllIS::Images::Image
   end
 
   def to_html
-    Jekyll::logger.warn self.inspect
-    Jekyll::logger.warn @site.static_files.inspect
+    # Jekyll::logger.warn self.inspect
+    # Jekyll::logger.warn @site.static_files.inspect
     wrap_img_tag make_img_tag
   end
 

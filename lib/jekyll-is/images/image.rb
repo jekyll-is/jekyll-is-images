@@ -2,8 +2,12 @@
 
 require 'json'
 require 'digest'
-require 'is-static-files'
+require 'net/http'
+require 'uri'
+require 'nokogiri'
+require 'fileutils'
 require 'mini_magick'
+require 'is-static-files'
 
 require_relative 'error'
 
@@ -44,34 +48,36 @@ class JekyllIS::Images::ImageInfo
 
   def process
 
+    warning "#{ self.inspect }"
+
     return from_file(@source, @source) if assets?
 
-    # src_image = if external?
-    #   nil
-    # else
-    #   MiniMagick::Image::open site.in_source_dir(@source)
-    # end
+    warning "Step 1"
 
     url, path = cached_paths
     return self if from_file(url, path)
 
-    # # Конвертируем, регистрируем и возвращаем...
-    # begin
-    #   tgt_image = convert_image src_image, path
-    #   static = @site.static_files.find { it.path == path }
-    #   unless static
-    #     static = IS::StaticFile::new @site, '/', url, source: path
-    #     @site.static_files << static
-    #   end
-    #   @url = static.url
-    #   @width = tgt_image.width
-    #   @height = tgt_image.height
-    #   @aspect_ratio = @width.to_f / @height.to_f
-    #   tgt_image.destroy!
-    # rescue => ex
-    #   error "Error with file #{ @source }: #{ ex.inspect }"
-    # end
+    warning "Step 2"
 
+    source_path = if external?
+      download_file @source, hashed: url
+    else
+      @site.in_source_dir @source
+    end
+
+    warning "Step 3"
+
+    if @transform[:format] == 'svg'
+      convert_svg source_path, path
+    else
+      convert_image source_path, path
+    end
+
+    warning "Step 4"
+
+    from_file url, path
+  rescue => ex
+    error "Error with file #{ @source.inspect }: #{ ex.inspect }"
     self
   end
 
@@ -134,34 +140,11 @@ class JekyllIS::Images::ImageInfo
     @site.config.dig('is_images', 'cache_dir') || CACHE_DIR
   end
 
-  def transform_json
-    @json ||= JSON::generate transform, sort_keys: true
-  end
-
-  def img_path
-    @site.config.dig('is_images', 'target_path') || 'img'
-  end
-
-  def targets image
-    sha256 = Digest::SHA256::new
-    sha256.update @source
-    if image
-      File::open image.path do |file|
-        while chunk = file.read(65536)
-          sha256.update chunk
-        end
-      end
-    end
-    sha256.update transform_json
-    digested = "#{ sha256.hexdigest }.#{ @transform[:format] }"
-    splitted = "#{ digested[0..1] }/#{ digested[2..3] }/#{ digested[4..] }"
-    [ @site.in_source_dir("#{ CACHE_DIR }/processed/#{ splitted }"), "/#{ img_path }/#{ splitted }" ]
-  end
-
-  def download_file url, limit = 3
+  def download_file url, limit = 3, hashed: ''
     raise 'Too many redirects!' if limit <= 0
     uri = URI::parse url
-    path = @site.in_source_dir "#{ CACHE_DIR }/#{ @transform[:salt] || '-' }/#{ uri.host }#{ uri.path }_.#{ @transform[:format] }"
+    path = @site.in_source_dir "#{ cache_dir }/downloads/#{ @transform[:salt] || '-' }/#{ hashed }"
+    return path if File.exist?(path)
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       request = Net::HTTP::Get::new uri
       http.request(request) do |response|
@@ -176,17 +159,13 @@ class JekyllIS::Images::ImageInfo
         when Net::HTTPRedirect
           location = response['location']
           new_url = URI.join(uri.to_s, location).to_s
-          return download_file new_url, limit - 1
+          return download_file new_url, limit - 1, hashed: hashed
         else
           raise "Error while download: #{ url }"
         end
       end
     end
     return path
-  end
-
-  def download
-    MiniMagick::Image::open download_file(@source)
   end
 
   def convert_svg source_path, target_path
@@ -229,12 +208,10 @@ class JekyllIS::Images::ImageInfo
     FileUtils.mkdir_p File.dirname(target_path)
     File.write(target_path, minified_xml)
 
-    MiniMagick::Image::open target_path
+    target_path
   end
 
-  def convert_image src_image, target_path
-    src_image ||= download
-    return convert_svg src_image.path, target_path if @transform[:format] == 'svg'
+  def convert_image source_path, target_path
     crop = @transform[:crop]
     fit = @transform[:fit]
     width = @transform[:width]
@@ -258,20 +235,22 @@ class JekyllIS::Images::ImageInfo
     format = @transform[:format] || 'png'
     options = @transform[:options] || {}
     quality = options['quality']
-    src_image.combine_options do |img|
-      img.crop crop if crop
-      img.resize resize if resize
-      img.strip
-      img.quality quality if quality
-      img.colorspace 'sRGB'
-      options.each do |k, v|
-        img.define "#{ k }=#{ v }"
+    MiniMagick::Image::open source_path do |image|
+      image.combine_options do |img|
+        img.crop crop if crop
+        img.resize resize if resize
+        img.strip
+        img.quality quality if quality
+        img.colorspace 'sRGB'
+        options.each do |k, v|
+          img.define "#{ k }=#{ v }"
+        end
       end
+      image.format format
+      FileUtils.mkdir_p File.dirname(target_path)
+      image.write target_path
     end
-    src_image.format format
-    FileUtils.mkdir_p File.dirname(target_path)
-    src_image.write target_path
-    MiniMagick::Image::open target_path
+    target_path
   end
 
 end
