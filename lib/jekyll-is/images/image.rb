@@ -48,16 +48,10 @@ class JekyllIS::Images::ImageInfo
 
   def process
 
-    warning "#{ self.inspect }"
-
     return from_file(@source, @source) if assets?
-
-    warning "Step 1"
 
     url, path = cached_paths
     return self if from_file(url, path)
-
-    warning "Step 2"
 
     source_path = if external?
       download_file @source, hashed: url
@@ -65,15 +59,11 @@ class JekyllIS::Images::ImageInfo
       @site.in_source_dir @source
     end
 
-    warning "Step 3"
-
     if @transform[:format] == 'svg'
       convert_svg source_path, path
     else
       convert_image source_path, path
     end
-
-    warning "Step 4"
 
     from_file url, path
   rescue => ex
@@ -101,11 +91,12 @@ class JekyllIS::Images::ImageInfo
       @site.static_files << static
     end
     @url = static.url
-    MiniMagick::Image::open full do |image|
+    image = MiniMagick::Image::open full
       @width = image.width
       @height = image.height
       @aspect_ratio = @width.to_r / @height.to_r
-    end
+      image.destroy!
+
     return self
   rescue => ex
     error "Error with file: #{ path.inspect }"
@@ -205,8 +196,9 @@ class JekyllIS::Images::ImageInfo
     svg_node['height'] = height.to_s
 
     minified_xml = svg_node.to_xml(indent: 0).gsub(/\n/, " ").gsub(/\s+/, " ")
-    FileUtils.mkdir_p File.dirname(target_path)
-    File.write(target_path, minified_xml)
+    target_full = @site.in_source_dir target_path
+    FileUtils.mkdir_p File.dirname(target_full)
+    File.write(target_full, minified_xml)
 
     target_path
   end
@@ -234,8 +226,8 @@ class JekyllIS::Images::ImageInfo
     end
     format = @transform[:format] || 'png'
     options = @transform[:options] || {}
-    quality = options['quality']
-    MiniMagick::Image::open source_path do |image|
+    quality = options.delete 'quality'
+    image = MiniMagick::Image::open source_path
       image.combine_options do |img|
         img.crop crop if crop
         img.resize resize if resize
@@ -247,9 +239,11 @@ class JekyllIS::Images::ImageInfo
         end
       end
       image.format format
-      FileUtils.mkdir_p File.dirname(target_path)
-      image.write target_path
-    end
+      target_full = @site.in_source_dir target_path
+      FileUtils.mkdir_p File.dirname(target_full)
+      image.write target_full
+      image.destroy!
+
     target_path
   end
 
