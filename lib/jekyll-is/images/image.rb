@@ -13,7 +13,6 @@ module JekyllIS::Images; end
 class JekyllIS::Images::ImageInfo
 
   include JekyllIS::Images::Error
-  include JekyllIS::Images::Cache
 
   class << self
 
@@ -45,70 +44,95 @@ class JekyllIS::Images::ImageInfo
 
   def process
 
-    if assets?
-      # Не делаем никаких преобразований — используем стандартное поведение.
-      without_slash = @source[1..]
-      static = @site.static_files.find { it.relative_path == @source || it.relative_path == without_slash }
-      if static
-        @url = static.url
-        image = MiniMagick::Image::open static.path
-        @width = image.width
-        @height = image.height
-        @aspect_ratio = @width.to_f / @height.to_f
-      else
-        error "Static file not found: #{ @source.inspect }"
-      end
-      return self
-    end
+    return from_file(@source, @source) if assets?
 
-    src_image = if external?
-      nil
-    else
-      MiniMagick::Image::open site.in_source_dir(@source)
-    end
+    # src_image = if external?
+    #   nil
+    # else
+    #   MiniMagick::Image::open site.in_source_dir(@source)
+    # end
 
-    path, url = targets src_image
-    if File.exist?(path)
-      # Файл уже закеширован, регистрируем и возвращаем
-      begin
-        tgt_image = MiniMagick::Image::open path
-        static = @site.static_files.find { it.path == path }
-        unless static
-          static = IS::StaticFile::new @site, '/', url, source: path
-          @site.static_files << static
-        end
-        @url = static.url
-        @width = tgt_image.width
-        @height = tgt_image.height
-        @aspect_ratio = @width.to_f / @height.to_f
-        return self
-      rescue => ex
-        error "Error with file #{ path.inspect }: #{ ex.inspect }"
-      end
-    end
+    url, path = cached_paths
+    return self if from_file(url, path)
 
-    # Конвертируем, регистрируем и возвращаем...
-    begin
-      tgt_image = convert_image src_image, path
-      static = @site.static_files.find { it.path == path }
-      unless static
-        static = IS::StaticFile::new @site, '/', url, source: path
-        @site.static_files << static
-      end
-      @url = static.url
-      @width = tgt_image.width
-      @height = tgt_image.height
-      @aspect_ratio = @width.to_f / @height.to_f
-    rescue => ex
-      error "Error with file #{ @source }: #{ ex.inspect }"
-    end
+    # # Конвертируем, регистрируем и возвращаем...
+    # begin
+    #   tgt_image = convert_image src_image, path
+    #   static = @site.static_files.find { it.path == path }
+    #   unless static
+    #     static = IS::StaticFile::new @site, '/', url, source: path
+    #     @site.static_files << static
+    #   end
+    #   @url = static.url
+    #   @width = tgt_image.width
+    #   @height = tgt_image.height
+    #   @aspect_ratio = @width.to_f / @height.to_f
+    #   tgt_image.destroy!
+    # rescue => ex
+    #   error "Error with file #{ @source }: #{ ex.inspect }"
+    # end
 
     self
   end
 
   CACHE_DIR = '.is-images-cache'
+  URL_PREFIX = "img"
 
   private
+
+  def from_file url, path
+    full = @site.in_source_dir path
+    return false unless File.exist?(full)
+
+    if path.start_with?('/')
+      second = path[1..]
+    else
+      second = "/#{ path }"
+    end
+    static = @site.static_files.find { it.relative_path == path || it.relative_path == second }
+    unless static
+      static = IS::StaticFile::new @site, '/', url, source: path
+      @site.static_files << static
+    end
+    @url = static.url
+    MiniMagick::Image::open full do |image|
+      @width = image.width
+      @height = image.height
+      @aspect_ratio = @width.to_r / @height.to_r
+    end
+    return self
+  rescue => ex
+    error "Error with file: #{ path.inspect }"
+    return nil
+  end
+
+  def cached_paths
+    sha256 = Digest::SHA256::new
+    sha256.update @source
+    unless external?
+      full = @site.in_source_dir @source
+      File::open full, 'rb' do |file|
+        while chunk = file.read(65536)
+          sha256.update chunk
+        end
+      end
+    end
+    sha256.update JSON::generate(transform, sort_keys: true)
+    digested = "#{ sha256.hexdigest }.#{ @transform[:format] }"
+    splitted = "#{ digested[0..1] }/#{ digested[2..3] }/#{ digested[4..] }"
+    return [ "/#{ url_prefix }/#{ splitted }", "#{ cache_dir }/processed/#{ splitted }" ]
+  rescue => ex
+    error "Error with file #{ @source.inspect }: #{ ex.inspect }"
+    return [ nil, nil ]
+  end
+
+  def url_prefix
+    @site.config.dig('is_images', 'url_prefix') || URL_PREFIX
+  end
+
+  def cache_dir
+    @site.config.dig('is_images', 'cache_dir') || CACHE_DIR
+  end
 
   def transform_json
     @json ||= JSON::generate transform, sort_keys: true
@@ -231,7 +255,6 @@ class JekyllIS::Images::ImageInfo
     else
       nil
     end
-    src_image.resize resize if resize
     format = @transform[:format] || 'png'
     options = @transform[:options] || {}
     quality = options['quality']

@@ -3,6 +3,7 @@
 require 'set'
 
 require_relative 'error'
+require_relative 'image'
 
 module JekyllIS; end
 module JekyllIS::Images; end
@@ -120,7 +121,7 @@ class JekyllIS::Images::Image
     src_format = 'jpeg' if src_format == 'jpg'
     src_format = 'tiff' if src_format == 'tif'
     @page.data['__is_images_formats_map'] ||= formats_map
-    @page.data['__is_images_formats_map'][src_format] || src_format
+    @page.data['__is_images_formats_map'][src_format] || @page.data['__is_images_formats_map']['default'] || src_format
   end
 
   def element_category
@@ -189,7 +190,7 @@ class JekyllIS::Images::Image
       fit: fit,
       salt: salt
     }
-    image = wrap_image @site, @source, transform
+    image = JekyllIS::Images::ImageInfo::wrap_image @site, @src, transform
     attributes = {}
     attributes['id'] = @id if @id
     attributes['alt'] = @attrs['alt']
@@ -252,7 +253,7 @@ class JekyllIS::Images::Figure
     @id = el_id
     @caption = el_caption
     @children = element.children&.map do |child|
-      image = JekyllIS::Images::Image::new @site, self
+      image = JekyllIS::Images::Image::new @site, @page, self
       case child.type
       when :a
         image.apply_a child
@@ -289,7 +290,7 @@ class JekyllIS::Images::Figure
       @classes << "__is_images_#{ flag }"
     end
     attributes['class'] = @classes.join(' ')
-    attributes['style'] = @styles.map { |k, v| "#{k}:#{v};" }.join('')
+    attributes['style'] = @styles.map { |k, v| "#{k}:#{v};" }.join('') if !@styles.empty?
     caption = @caption && @caption != '' ? "<figcaption>#{ @caption }</figcaption>" : ''
     "<figure #{ attributes.map { |k, v| "#{k}=\"#{v}\"" }.join(' ') }>\n#{ @children.map(&:to_html).join("\n") }\n</figure>"
   end
