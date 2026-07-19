@@ -51,11 +51,15 @@ class JekyllIS::Images::ImageInfo
 
     return from_file(@source, @source) if assets?
 
-    url, path = cached_paths
+    digest = source_digest
+    splitted_digest = "#{ digest[0..3] }/#{ digest[4..7] }/#{ digest[8..(config(DIGITS_KEY).to_i + 7)] }"
+    url = "/#{ target_path_prefix }/#{ splitted_digest }.#{ @transform[:format] }"
+    path = "#{ cache_path }/processed/#{ splitted_digest }.#{ @transform[:format] }"
+
     return self if from_file(url, path)
 
     source_path = if external?
-      download_file @source, hashed: url
+      download_file @source, hashed: splitted_digest
     else
       @site.in_source_dir @source
     end
@@ -101,30 +105,27 @@ class JekyllIS::Images::ImageInfo
     return nil
   end
 
-  def cached_paths
+  def source_digest
     sha256 = Digest::SHA256::new
     sha256.update @source
     unless external?
       full = @site.in_source_dir @source
-      File::open full, 'rb' do |file|
+      File::open full, "rb" do |file|
         while chunk = file.read(65536)
           sha256.update chunk
         end
       end
     end
-    sha256.update JSON::generate(transform, sort_keys: true)
-    digested = "#{ sha256.hexdigest }"
-    splitted = "#{ digested[0..3] }/#{ digested[4..7] }/#{ digested[8..(config(DIGITS_KEY).to_i + 7)] }.#{ @transform[:format] }"
-    return [ "/#{ target_path_prefix }/#{ splitted }", "#{ cache_path }/processed/#{ splitted }" ]
+    sha256.update JSON::generate(@transform, sort_keys: true)
+    sha256.hexdigest
   rescue => ex
     error "Error with file #{ @source.inspect }: #{ ex.inspect }"
-    return [ nil, nil ]
   end
 
   def download_file url, limit = 3, hashed: ''
     raise 'Too many redirects!' if limit <= 0
     uri = URI::parse url
-    path = @site.in_source_dir "#{ cache_path }/downloads/#{ @transform[:salt] || '-' }/#{ hashed }.src"
+    path = @site.in_source_dir "#{ cache_path }/downloads/#{ @transform[:salt] || '-' }/#{ hashed }"
     return path if File.exist?(path)
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       request = Net::HTTP::Get::new uri
