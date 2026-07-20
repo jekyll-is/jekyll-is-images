@@ -47,8 +47,6 @@ module JekyllIS::Images::Config
   CACHE_PATH_KEY = 'cache_path'
   DIGITS_KEY = 'cache_digits'
 
-  private
-
   def config *path, check_default: false
 
     value = @page&.data&.dig CONFIG_KEY, *path
