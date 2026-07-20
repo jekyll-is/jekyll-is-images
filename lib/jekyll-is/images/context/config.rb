@@ -9,6 +9,7 @@ module JekyllIS::Images::Config
     'target_prefix' => 'img',
     'cache_path' => '.is-images-cache',
     'cache_digits' => 8,
+    'default_link' => 'view',
     'formats' => {
       'svg' => 'svg',
       'jpeg' => 'avif',
@@ -45,7 +46,6 @@ module JekyllIS::Images::Config
 
   TARGET_PREFIX_KEY = 'target_prefix'
   CACHE_PATH_KEY = 'cache_path'
-  DIGITS_KEY = 'cache_digits'
 
   def config *path, check_default: false
 

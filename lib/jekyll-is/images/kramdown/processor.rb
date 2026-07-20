@@ -19,19 +19,34 @@ class JekyllIS::Images::Kramdown::Processor
   private
 
   def image? element
-    element.type == :img
+    return false unless element && element.type == :img && element.attr['src']
+    # Не все изображения нам нужно обрабатывать. В частности, если src начинается со слеша,
+    #  конвертация не производится, и элемент img обрабатывается по умолчанию.
+    # Тем не менее, нам может понадобиться, с одной стороны, использовать необрабатываемые
+    #  изображения в галереях, или других figure, тогда следует явно указать положительное
+    #  значение в атрибуте is-image. С другой стороны, мы можем проигнорировать обработку
+    #  картинки с src, не начинающимся со слеша — тогда следует явно указать отрицательное
+    #  значение в том же атрибуте.
+    flag = element.attr['is-image']
+    if element.attr['src'].start_width?('/')
+      [ '1', 'true', 'yes', '+' ].include?(flag)
+    else
+      ![ '0', 'false', 'no', '-' ].include?(flag)
+    end
   end
 
   def anchor? element
-    element.type == :a && element.children&.size == 1 && element.children&.first&.type == :img
+    # Нас интересуют не все якоря, а только оборачивающие единственное изображение.
+    element && element.type == :a && element.children && element.children.size == 1 && image?(element.children.first)
   end
 
   def blank? element
-    element.type == :blank
+    element && element.type == :blank
   end
 
   def figure? element
-    element.type == :p && element.children&.all? { image?(it) || anchor?(it) || blank?(it) }
+    # В тег <figure> превращаются абзацы, содержащие только изображения.
+    element && element.type == :p && element.children && element.children.count { image?(it) || anchor?(it) || blank?(it) } > 0
   end
 
   def process_element element, parent = nil, index = nil

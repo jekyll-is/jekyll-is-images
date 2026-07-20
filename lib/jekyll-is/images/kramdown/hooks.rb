@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'is-kramdown-hooked'
+
 require_relative 'processor'
 
 module JekyllIS::Images::Kramdown::Hooks

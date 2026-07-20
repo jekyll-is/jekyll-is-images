@@ -7,7 +7,7 @@ require_relative 'config'
 require_relative 'error'
 require_relative 'image'
 
-class JekyllIS::Images::Image
+class JekyllIS::Images::NImage
 
   include JekyllIS::Images::Config
   include JekyllIS::Images::Error
@@ -140,7 +140,7 @@ class JekyllIS::Images::Image
 
 end
 
-class JekyllIS::Images::Figure
+class JekyllIS::Images::NFigure
 
   include JekyllIS::Images::Error
 
