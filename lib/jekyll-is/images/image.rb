@@ -9,10 +9,8 @@ require 'fileutils'
 require 'mini_magick'
 require 'is-static-files'
 
+require_relative 'info'
 require_relative 'error'
-
-module JekyllIS; end
-module JekyllIS::Images; end
 
 class JekyllIS::Images::ImageInfo
 

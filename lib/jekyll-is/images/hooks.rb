@@ -2,12 +2,10 @@
 
 require 'is-kramdown-hooked'
 
+require_relative 'info'
 require_relative 'error'
 require_relative 'objects'
 require_relative 'converters'
-
-module JekyllIS; end
-module JekyllIS::Images; end
 
 module JekyllIS::Images::Hooks
 

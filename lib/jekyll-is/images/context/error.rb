@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'info'
+require 'jekyll'
+
+require_relative '../info'
 require_relative 'config'
 
 module JekyllIS::Images::Error

@@ -2,12 +2,10 @@
 
 require 'set'
 
+require_relative 'info'
 require_relative 'config'
 require_relative 'error'
 require_relative 'image'
-
-module JekyllIS; end
-module JekyllIS::Images; end
 
 class JekyllIS::Images::Image
 
@@ -73,7 +71,8 @@ class JekyllIS::Images::Image
   end
 
   def to_latex
-    '' # TODO: implement
+    # TODO: implement
+    raise NotImplementedError, 'LaTeX output is not yet supported'
   end
 
   private
@@ -220,7 +219,8 @@ class JekyllIS::Images::Figure
   end
 
   def to_latex
-    '' # TODO: implement
+    # TODO: implement
+    raise NotImplementedError, 'LaTeX output is not yet supported'
   end
 
   private

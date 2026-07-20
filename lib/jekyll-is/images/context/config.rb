@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'info'
+require_relative '../info'
 
 module JekyllIS::Images::Config
 
