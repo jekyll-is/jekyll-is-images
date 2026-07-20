@@ -9,8 +9,6 @@ module JekyllIS::Images::Error
 
   include JekyllIS::Images::Config
 
-  private
-
   ABORT_KEY = 'abort_on_error'
 
   def abort_on_error?
