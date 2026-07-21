@@ -4,6 +4,6 @@ require_relative '../info'
 
 module JekyllIS::Images::Image
 
-  Data = ::Data::define :url, :width, :aspect_ratio
+  Info = Data::define :url, :width, :aspect_ratio
 
 end

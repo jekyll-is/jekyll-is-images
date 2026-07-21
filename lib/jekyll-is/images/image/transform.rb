@@ -26,7 +26,7 @@ module JekyllIS::Images::Image::Transform
       downloaded = download_file context, source, splitted_digest, params
       unless downloaded
         context.warning "Failed download #{ source.inspect } on page #{ context.page.relative_path.inspect }"
-        return JekyllIS::Images::Image::Data[source, nil, nil]
+        return JekyllIS::Images::Image::Info[source, nil, nil]
       end
       downloaded
     else
@@ -81,7 +81,7 @@ module JekyllIS::Images::Image::Transform
       magick.destroy!
     end
 
-    JekyllIS::Images::Image::Data[static.url, w, w.to_r / h.to_r]
+    JekyllIS::Images::Image::Info[static.url, w, w.to_r / h.to_r]
   end
 
   def source_digest context, source, params
@@ -163,8 +163,8 @@ module JekyllIS::Images::Image::Transform
     height = params[:height]
     height = (orig_height.to_f * width.to_f / orig_width.to_f).round.to_i if width && !height
     width = (orig_width.to_f * height.to_f / orig_height.to_f).round.to_i if height && !width
-    svg['width'] = width
-    svg['height'] = height
+    svg['width'] = width.to_s
+    svg['height'] = height.to_s
 
     minified = svg.to_xml(indent: 0).gsub(/\n/, " ").gsub(/\s+/, " ")
     full = context.site.in_source_dir target

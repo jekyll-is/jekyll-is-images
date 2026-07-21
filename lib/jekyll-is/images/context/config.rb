@@ -10,6 +10,7 @@ module JekyllIS::Images::Config
     'cache_path' => '.is-images-cache',
     'cache_digits' => 8,
     'default_link' => 'view',
+    'caption_position' => 'bottom',
     'formats' => {
       'svg' => 'svg',
       'jpeg' => 'avif',
@@ -35,7 +36,9 @@ module JekyllIS::Images::Config
     'gallery' => {
       'image_width' => 200,
       'image_height' => 200,
-      'image_fit' => 'contain'
+      'image_fit' => 'contain',
+      'modes' => 'grid,slides',
+      'caption_position' => 'top'
     }
   }.freeze
 
