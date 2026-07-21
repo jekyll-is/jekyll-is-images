@@ -44,7 +44,8 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     @caption_position = @attrs.delete('caption-position')
   end
 
-  def to_html(overlay: { })
+  def to_html(overlay: {})
+
     @context.page.data['__is_images_has_images'] = true
     transform = transform_parameters overlay
     image = JekyllIS::Images::Image::transform @context, @src, transform

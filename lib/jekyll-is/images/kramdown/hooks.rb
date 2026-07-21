@@ -29,7 +29,7 @@ end
 
 Jekyll::Hooks::register :site, :after_init do |site|
   if site.config.dig('kramdown', 'input') == 'ISKram'
-    JekyllIS::Images::Hooks::init_hooks site
+    JekyllIS::Images::Kramdown::Hooks::init_hooks site
   else
     Jekyll::logger.error 'jekyll-is-images', 'ISKram parser is not initialized: JekyllIS::Images features can not be enabled!'
   end

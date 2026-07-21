@@ -28,7 +28,7 @@ class JekyllIS::Images::Kramdown::Processor
     #  картинки с src, не начинающимся со слеша — тогда следует явно указать отрицательное
     #  значение в том же атрибуте.
     flag = element.attr['is-image']
-    if element.attr['src'].start_width?('/')
+    if element.attr['src'].start_with?('/')
       [ '1', 'true', 'yes', '+' ].include?(flag)
     else
       ![ '0', 'false', 'no', '-' ].include?(flag)
@@ -51,13 +51,13 @@ class JekyllIS::Images::Kramdown::Processor
 
   def process_element element, parent = nil, index = nil
     if figure?(element)
-      value = JekyllIS::Images::Kramdown::Value::Figure::new @context
+      value = JekyllIS::Images::Kramdown::Figure::new @context
       value.apply element
-      parent[index] = value.to_kramdown
+      parent.children[index] = value.to_kramdown
     elsif image?(element) || anchor?(element)
-      value = JekyllIS::Images::Kramdown::Value::Image::new @context
+      value = JekyllIS::Images::Kramdown::Image::new @context
       value.apply element
-      parent[index] = value.to_kramdown
+      parent.children[index] = value.to_kramdown
     else
       if element.children
         element.children.each_with_index do |child, index|

@@ -34,9 +34,6 @@ module JekyllIS::Images::Config
       }
     },
     'gallery' => {
-      'image_width' => 200,
-      'image_height' => 200,
-      'image_fit' => 'contain',
       'modes' => 'grid,slides',
       'caption_position' => 'top'
     }

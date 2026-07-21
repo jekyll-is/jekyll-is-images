@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require 'net/http'
+require 'mini_magick'
+require 'is-static-files'
+
 require_relative 'data'
 
 module JekyllIS::Images::Image::Transform
@@ -9,18 +13,18 @@ module JekyllIS::Images::Image::Transform
   def transform context, source, params
 
     # Проверяем на assets, возвращаем как есть, если так.
-    return from_file context, source, source if assets?
+    return from_file context, source, source if assets?(source)
 
     digest = source_digest context, source, params
-    splitted_digest = "#{digest[0..3]}/#{digest[4..7]}/#{digest[8..(config(DIGITS_KEY).to_i + 7)]}"
-    url = "/#{target_path_prefix}/#{splitted_digest}.#{@transform[:format]}"
-    path = "#{cache_path}/processed/#{splitted_digest}.#{@transform[:format]}"
+    splitted_digest = "#{ digest[0..3] }/#{ digest[4..7] }/#{ digest[8..(context.config(DIGITS_KEY).to_i + 7)] }"
+    url = "/#{ context.target_path_prefix }/#{ splitted_digest }.#{ params[:format] }"
+    path = "#{ context.cache_path }/processed/#{ splitted_digest }.#{ params[:format] }"
 
     # Ищем в кэше.
     result = from_file context, url, path
     return result if result
 
-    source_path = if external?
+    source_path = if external?(source)
       # Скачиваем. Если не удается скачать, возвращаем url как есть без дополнительных данных.
       #  Исходим из того, что проблемы со скачиванием могут быть временными.
       downloaded = download_file context, source, splitted_digest, params
@@ -87,7 +91,7 @@ module JekyllIS::Images::Image::Transform
   def source_digest context, source, params
     sha256 = Digest::SHA256::new
     sha256.update source
-    unless external?
+    unless external?(source)
       full = context.site.in_source_dir source
       File::open full, "rb" do |file|
         while chunk = file.read(65536)

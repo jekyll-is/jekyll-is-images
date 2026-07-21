@@ -54,7 +54,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     if @children.size == 0
       @context.error "Invalid figure (without images) on page #{ @context.page.relative_path.inspect }"
     end
-    if @children.site > 1 && @modes.empty?
+    if @children.size > 1 && @modes.empty?
       @context.error "Invalid gallery (without modes) on page #{ @context.page.relative_path.inspect }"
     end
   end
@@ -63,11 +63,13 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     case @children.size
     when 0
       @context.error "Invalid figure (without images) on page #{ @context.page.relative_path.inspect }"
+      ''
     when 1
       generate_simple_html
     else
       if @modes.empty?
         @context.error "Invalid gallery (without modes) on page #{ @context.page.relative_path.inspect }"
+        ''
       else
         @context.page.data['__is_images_has_galleries'] = true
         gallery = @modes.map { send "generate_#{ it }_html" }.join("\n")
@@ -95,10 +97,12 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     fig_attrs['style'] = styles.map { |k, v| "#{ k }:#{ v };" }.join('') unless styles.empty?
     fig_attrs['data-modes'] = @modes.join(',') unless @modes.empty?
 
-    if @caption_position == 'top'
-      inner = "<figcaption>#{ process_caption(@caption) }</figcaption>\n#{ inner }"
-    else
-      inner = "#{ inner }\n<figcaption>#{ process_caption(@caption) }</figcaption>"
+    if @caption
+      if @caption_position == 'top'
+        inner = "<figcaption>#{ process_caption(@caption) }</figcaption>\n#{ inner }"
+      else
+        inner = "#{ inner }\n<figcaption>#{ process_caption(@caption) }</figcaption>"
+      end
     end
 
     "<figure #{ fig_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>\n#{ inner }\n</figure>"
@@ -148,19 +152,23 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     overlay['mode']   = 'slide'
     items = @children.map do |image|
       inner = image.to_html(overlay: overlay)
-      caption = image.caption ? "<figcaption>#{ process_caption(image.caption) }</figcaption>" : ""
+      caption = image.caption ? "<figcaption>#{ process_caption(image.caption) }</figcaption>" : ''
       if (@attrs['slide-caption-position'] || @context.config('slide_caption_position')) == 'top'
-        inner = "#{caption}\n#{inner}"
+        inner = "#{ caption }\n#{ inner }"
       else
-        inner = "#{inner}\n#{caption}"
+        inner = "#{ inner }\n#{ caption }"
       end
-      "<figure class=\"__is_images_slide_figure\">\n#{inner}\n</figure>"
+      "<figure class=\"__is_images_slide_figure\">\n#{ inner }\n</figure>"
     end
-    "<div class=\"__is_images_slides_container\">#{items.join("\n")}</div>"
+    "<div class=\"__is_images_slides_container\">#{ items.join("\n") }</div>"
   end
 
   def process_caption caption
-    @context.site.find_converter_instance(Jekyll::Converters::Markdown).convert(caption)
+    if caption
+      @context.site.find_converter_instance(Jekyll::Converters::Markdown).convert(caption)
+    else
+      nil
+    end
   end
 
 end
