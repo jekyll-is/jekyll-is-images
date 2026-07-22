@@ -41,21 +41,23 @@ class JekyllIS::Images::Kramdown::Processor
   end
 
   def blank? element
-    element && element.type == :blank
+    element && (element.type == :blank || element.type == :text && /^\s*$/m =~ element.value)
   end
 
   def figure? element
     # В тег <figure> превращаются абзацы, содержащие только изображения.
-    element && element.type == :p && element.children && element.children.count { image?(it) || anchor?(it) || blank?(it) } > 0
+    element && element.type == :p && element.children &&
+              element.children.all? { image?(it) || anchor?(it) || blank?(it) } &&
+              element.children.any? { image?(it) || anchor?(it) }
   end
 
   def process_element element, parent = nil, index = nil
     if figure?(element)
-      value = JekyllIS::Images::Kramdown::Figure::new @context
+      value = JekyllIS::Images::Kramdown::Figure::new(@context)
       value.apply element
       parent.children[index] = value.to_kramdown
     elsif image?(element) || anchor?(element)
-      value = JekyllIS::Images::Kramdown::Image::new @context
+      value = JekyllIS::Images::Kramdown::Image::new(@context)
       value.apply element
       parent.children[index] = value.to_kramdown
     else

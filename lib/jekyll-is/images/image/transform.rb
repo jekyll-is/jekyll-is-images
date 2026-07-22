@@ -2,6 +2,7 @@
 
 require 'net/http'
 require 'mini_magick'
+require 'nokogiri'
 require 'is-static-files'
 
 require_relative 'data'
@@ -16,7 +17,7 @@ module JekyllIS::Images::Image::Transform
     return from_file context, source, source if assets?(source)
 
     digest = source_digest context, source, params
-    splitted_digest = "#{ digest[0..3] }/#{ digest[4..7] }/#{ digest[8..(context.config(DIGITS_KEY).to_i + 7)] }"
+    splitted_digest = "#{ digest[0..1] }/#{ digest[2..3] }/#{ digest[4..(context.config(DIGITS_KEY).to_i + 3)] }"
     url = "/#{ context.target_path_prefix }/#{ splitted_digest }.#{ params[:format] }"
     path = "#{ context.cache_path }/processed/#{ splitted_digest }.#{ params[:format] }"
 
@@ -69,7 +70,8 @@ module JekyllIS::Images::Image::Transform
     else
       "/#{ path }"
     end
-    static = context.site.static_files.find { it.relative_path == path || it.relative_path == second }
+    context.warning "FIND: #{ path.inspect }\nFOUND: #{ context.site.static_files.map(&:path).inspect }"
+    static = context.site.static_files.find { it.relative_path == path || it.relative_path == second || it.path == path || it.path == second }
     unless static
       static = IS::StaticFile::new context.site, '/', url, source: path
       context.site.static_files << static
@@ -82,7 +84,7 @@ module JekyllIS::Images::Image::Transform
       w = magick.width
       h = magick.height
     ensure
-      magick.destroy!
+      magick&.destroy!
     end
 
     JekyllIS::Images::Image::Info[static.url, w, w.to_r / h.to_r]
@@ -222,7 +224,7 @@ module JekyllIS::Images::Image::Transform
       FileUtils.mkdir_p File.dirname(full)
       image.write full
     ensure
-      image.destroy!
+      image&.destroy!
     end
 
     target

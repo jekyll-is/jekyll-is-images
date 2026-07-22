@@ -39,6 +39,7 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     @title ||= @caption
     @title = nil if @title == ''
     @caption = nil if @caption == ''
+    @caption ||= @alt if @flags.delete('caption')
     @lazy = @flags.delete?('lazy')
     @salt = @attrs.delete('salt')
     @caption_position = @attrs.delete('caption-position')

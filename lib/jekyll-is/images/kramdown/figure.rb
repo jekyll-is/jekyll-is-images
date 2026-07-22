@@ -59,6 +59,11 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     end
   end
 
+  INNER_PREFIX = {
+    'grid' => 'cell',
+    'slides' => 'slide'
+  }
+
   def to_html
     case @children.size
     when 0
@@ -72,7 +77,12 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
         ''
       else
         @context.page.data['__is_images_has_galleries'] = true
-        gallery = @modes.map { send "generate_#{ it }_html" }.join("\n")
+        hide = false
+        gallery = @modes.map do |mode|
+          item = generate_gallery_html(mode, INNER_PREFIX[mode], hide)
+          hide = true
+          item
+        end.join("\n")
         generate_outer_html gallery
       end
     end
@@ -113,62 +123,42 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     generate_outer_html @children.first.to_html(overlay: overlay)
   end
 
-  def generate_grid_html
+  def generate_gallery_html mode, prefix, hide
     attrs = @attrs.dup
     overlay = {}
-    overlay['format'] = attrs.delete('cell-format') || @context.config('grid', 'format')
-    overlay['width']  = attrs.delete('cell-width')  || @context.config('grid', 'width')
-    overlay['height'] = attrs.delete('cell-height') || @context.config('grid', 'height')
-    overlay['scale']  = attrs.delete('cell-scale')  || @context.config('grid', 'scale')
-    overlay['crop']   = attrs.delete('cell-crop')   || @context.config('grid', 'crop')
-    overlay['fit']    = attrs.delete('cell-fit')    || @context.config('grid', 'fit')
+    overlay['format'] = attrs.delete("#{ prefix }-format") || @context.config(mode, 'format')
+    overlay['width']  = attrs.delete("#{ prefix }-width")  || @context.config(mode, 'width')
+    overlay['height'] = attrs.delete("#{ prefix }-height") || @context.config(mode, 'height')
+    overlay['scale']  = attrs.delete("#{ prefix }-scale")  || @context.config(mode, 'scale')
+    overlay['crop']   = attrs.delete("#{ prefix }-crop")   || @context.config(mode, 'crop')
+    overlay['fit']    = attrs.delete("#{ prefix }-fit")    || @context.config(mode, 'fit')
     overlay['salt']   = attrs.delete('salt')
     overlay['attrs']  = attrs
-    overlay['mode']   = 'cell'
+    overlay['mode']   = prefix
     items = @children.map do |image|
       inner = image.to_html(overlay: overlay)
       caption = image.caption ? "<figcaption>#{ process_caption(image.caption) }</figcaption>" : ''
-      if (@attrs['cell-caption-position'] || @context.config('cell_caption_position')) == 'top'
+      if (@attrs["#{ prefix }-caption-position"] || @context.config("#{ prefix }_caption_position")) == 'top'
         inner = "#{ caption }\n#{ inner }"
       else
         inner = "#{ inner }\n#{ caption }"
       end
-      "<figure class=\"__is_images_cell_figure\">\n#{ inner }\n</figure>"
+      "<figure class=\"__is_images_#{ prefix }_figure\">#{ inner }</figure>"
     end
-    "<div class=\"__is_images_grid_container\">#{ items.join("\n") }</div>"
-  end
-
-  def generate_slides_html
-    attrs = @attrs.dup
-    overlay = {}
-    overlay['format'] = attrs.delete('slide-format') || @context.config('slides', 'format')
-    overlay['width']  = attrs.delete('slide-width')  || @context.config('slides', 'width')
-    overlay['height'] = attrs.delete('slide-height') || @context.config('slides', 'height')
-    overlay['scale']  = attrs.delete('slide-scale')  || @context.config('slides', 'scale')
-    overlay['crop']   = attrs.delete('slide-crop')   || @context.config('slides', 'crop')
-    overlay['fit']    = attrs.delete('slide-fit')    || @context.config('slides', 'fit')
-    overlay['salt']   = attrs.delete('salt')
-    overlay['attrs']  = attrs
-    overlay['mode']   = 'slide'
-    items = @children.map do |image|
-      inner = image.to_html(overlay: overlay)
-      caption = image.caption ? "<figcaption>#{ process_caption(image.caption) }</figcaption>" : ''
-      if (@attrs['slide-caption-position'] || @context.config('slide_caption_position')) == 'top'
-        inner = "#{ caption }\n#{ inner }"
-      else
-        inner = "#{ inner }\n#{ caption }"
-      end
-      "<figure class=\"__is_images_slide_figure\">\n#{ inner }\n</figure>"
-    end
-    "<div class=\"__is_images_slides_container\">#{ items.join("\n") }</div>"
+    cnt_styles = {}
+    cnt_styles["--is-image-#{ prefix }-width"] = "#{ overlay['width'] }px" if overlay['width']
+    cnt_styles["--is-image-#{ prefix }-height"] = "#{ overlay['height'] }px" if overlay['height']
+    cnt_styles['display'] = 'none' if hide
+    cnt_classes = []
+    cnt_classes << "__is_images_#{ mode }_container"
+    cnt_attrs = {}
+    cnt_attrs['class'] = cnt_classes.join(' ')
+    cnt_attrs['style'] = cnt_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
+    "<div #{ cnt_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>#{ items.join("\n") }</div>"
   end
 
   def process_caption caption
-    if caption
-      @context.site.find_converter_instance(Jekyll::Converters::Markdown).convert(caption)
-    else
-      nil
-    end
+    @context.markdown.convert(caption).chomp.delete_prefix('<p>').delete_suffix('</p>')
   end
 
 end

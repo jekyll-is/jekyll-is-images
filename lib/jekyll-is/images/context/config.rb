@@ -57,9 +57,9 @@ module JekyllIS::Images::Config
     default = path.dup
     default[-1] = 'default'
     if check_default
-      value = @page&.data.dig CONFIG_KEY, *default
+      value = @page&.data&.dig CONFIG_KEY, *default
       return value if value
-      value = @site&.config.dig CONFIG_KEY, *default
+      value = @site&.config&.dig CONFIG_KEY, *default
       return value if value
     end
 
