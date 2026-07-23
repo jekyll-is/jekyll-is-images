@@ -17,14 +17,14 @@ module JekyllIS::Images::Error
 
   def error message
     if abort_on_error?
-      Jekyll::logger.abort_with caller_locations(1, 1).first.base_label, message
+      Jekyll::logger.abort_with caller_locations(1, 1).first.label, message
     else
-      Jekyll::logger.error caller_locations(1, 1).first.base_label, message
+      Jekyll::logger.error caller_locations(1, 1).first.label, message
     end
   end
 
   def warning message
-    Jekyll::logger.warn caller_locations(1, 1).first.base_label, message
+    Jekyll::logger.warn caller_locations(1, 1).first.label, message
   end
 
 end

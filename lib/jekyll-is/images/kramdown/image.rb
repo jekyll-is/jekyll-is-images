@@ -20,6 +20,7 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
   def apply element
     super(element)
     super(element.children.first) if element.type == :a
+    @id ||= gen_id
     @alt = @attrs.delete('alt')
     @src = @attrs.delete('src')
     @format = @attrs.delete('format') || @context.detect_format(@src)
@@ -103,6 +104,12 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
   end
 
   private
+
+  def gen_id
+    context.page.data["__is_images_image_count"] ||= 0
+    context.page.data["__is_images_image_count"] += 1
+    "img-#{context.page.data["__is_images_image_count"]}"
+  end
 
   def transform_parameters overlay
     attrs = @attrs.merge(overlay['attrs'] || {})

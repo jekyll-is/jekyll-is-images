@@ -22,6 +22,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
 
   def apply element
     super(element)
+    @id ||= gen_id
     @caption = @attrs.delete('caption')
     @caption_position = @attrs.delete('caption-position')
     @modes = @attrs.delete('modes')&.split(',') || @context.config('gallery', 'modes')&.split(',') || []
@@ -59,9 +60,20 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     end
   end
 
-  INNER_PREFIX = {
-    'grid' => 'cell',
-    'slides' => 'slide'
+  # @private
+  MODES = {
+    'grid' => {
+      child: 'cell',
+      label: 'table',
+      display: 'grid',
+      navbar: false
+    },
+    'slides' => {
+      child: 'slide',
+      label: 'slides',
+      display: 'flex',
+      navbar: true
+    }
   }
 
   def to_html
@@ -79,7 +91,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
         @context.page.data['__is_images_has_galleries'] = true
         hide = false
         gallery = @modes.map do |mode|
-          item = generate_gallery_html(mode, INNER_PREFIX[mode], hide)
+          item = generate_gallery_html(mode, hide)
           hide = true
           item
         end.join("\n")
@@ -89,6 +101,12 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
   end
 
   private
+
+  def gen_id
+    context.page.data['__is_images_figure_count'] ||= 0
+    context.page.data['__is_images_figure_count'] += 1
+    "fig-#{ context.page.data['__is_images_figure_count'] }"
+  end
 
   def generate_outer_html inner
 
@@ -115,6 +133,20 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       end
     end
 
+    if gallery? && @modes.size > 1
+      inputs = ''
+      labels = ''
+      first = true
+      @modes.each do |mode|
+        inputs += "<input class=\"__is_images_tab_radio\" type=\"radio\" id=\"#{ @id }-#{ mode }\" name=\"mode-#{ @id }\"#{ first ? 'checked' : '' }>"
+        first = false
+        labels += "<label class=\"__is_images_tab_label\" for=\"#{ @id }-#{ mode }\">#{ MODES.dig(mode, :label) }</label>"
+      end
+      inner = "#{ inputs }<div class=\"__is_images_tab_control\">#{ labels }</div>#{ inner }"
+    end
+
+    # TODO: реализовать блок переключателей
+
     "<figure #{ fig_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>\n#{ inner }\n</figure>"
   end
 
@@ -123,7 +155,8 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     generate_outer_html @children.first.to_html(overlay: overlay)
   end
 
-  def generate_gallery_html mode, prefix, hide
+  def generate_gallery_html mode, hide
+    prefix = MODES.dig mode, :child
     attrs = @attrs.dup
     overlay = {}
     overlay['format'] = attrs.delete("#{ prefix }-format") || @context.config(mode, 'format')
@@ -135,7 +168,11 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     overlay['salt']   = attrs.delete('salt')
     overlay['attrs']  = attrs
     overlay['mode']   = prefix
+    nav = ''
+    navbar = MODES.dig mode, :navbar
+    num = 0
     items = @children.map do |image|
+      num += 1
       inner = image.to_html(overlay: overlay)
       caption = image.caption ? "<figcaption>#{ process_caption(image.caption) }</figcaption>" : ''
       if (@attrs["#{ prefix }-caption-position"] || @context.config("#{ prefix }_caption_position")) == 'top'
@@ -143,18 +180,26 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       else
         inner = "#{ inner }\n#{ caption }"
       end
-      "<figure class=\"__is_images_#{ prefix }_figure\">#{ inner }</figure>"
+      if navbar
+        nav += "<a href=\"\##{ @id }-#{ mode }-#{ num }\">#{ num }</a>"
+      end
+      "<figure class=\"__is_images_#{ prefix }_figure\" id=\"#{ @id }-#{ mode }-#{ num }\">#{ inner }</figure>"
     end
     cnt_styles = {}
-    cnt_styles["--is-image-#{ prefix }-width"] = "#{ overlay['width'] }px" if overlay['width']
-    cnt_styles["--is-image-#{ prefix }-height"] = "#{ overlay['height'] }px" if overlay['height']
-    cnt_styles['display'] = 'none' if hide
+    cnt_styles["--is-images-#{ prefix }-width"] = "#{ overlay['width'] }px" if overlay['width']
+    cnt_styles["--is-images-#{ prefix }-height"] = "#{ overlay['height'] }px" if overlay['height']
+    cnt_styles['--is-images-display'] = MODES.dig mode, :display
+    # cnt_styles['display'] = 'none' if hide
     cnt_classes = []
     cnt_classes << "__is_images_#{ mode }_container"
+    cnt_classes << '__is_images_tab_block'
     cnt_attrs = {}
     cnt_attrs['class'] = cnt_classes.join(' ')
     cnt_attrs['style'] = cnt_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
-    "<div #{ cnt_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>#{ items.join("\n") }</div>"
+    # if navbar
+      nav = "<nav class=\"__is_images_gallery_navbar\">#{ nav }</nav>"
+    # end
+    "<div #{ cnt_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>#{ items.join("\n") }</div>#{ nav }"
   end
 
   def process_caption caption

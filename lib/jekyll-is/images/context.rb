@@ -9,7 +9,7 @@ class JekyllIS::Images::Context
   include JekyllIS::Images::Config
   include JekyllIS::Images::Error
 
-  attr_reader :site, :page, :markdown
+  attr_reader :site, :page
 
   def initialize site, page
     @site = site

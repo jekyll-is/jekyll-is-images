@@ -70,7 +70,6 @@ module JekyllIS::Images::Image::Transform
     else
       "/#{ path }"
     end
-    context.warning "FIND: #{ path.inspect }\nFOUND: #{ context.site.static_files.map(&:path).inspect }"
     static = context.site.static_files.find { it.relative_path == path || it.relative_path == second || it.path == path || it.path == second }
     unless static
       static = IS::StaticFile::new context.site, '/', url, source: path

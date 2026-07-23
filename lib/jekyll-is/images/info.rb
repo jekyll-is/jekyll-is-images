@@ -13,5 +13,6 @@ module JekyllIS::Images::Info
   AUTHOR   = 'Ivan Shikhalev'
   EMAIL    = 'shikhalev@gmail.com'
   HOMEPAGE = 'https://github.com/jekyll-is/jekyll-is-images'
+  PATH     = File.expand_path '../../../..', __FILE__
 
 end

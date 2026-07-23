@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description =   JekyllIS::Images::Info::SUMMARY + '.'
   s.authors     = [ JekyllIS::Images::Info::AUTHOR  ]
   s.email       = [ JekyllIS::Images::Info::EMAIL   ]
-  s.files       = Dir["lib/**/*", "README.md", "LICENSE"]
+  s.files       = Dir[ 'lib/**/*', 'assets/**/*', 'notes/**/*', 'README.md', 'LICENSE']
   s.homepage    =   JekyllIS::Images::Info::HOMEPAGE
   s.license     =   JekyllIS::Images::Info::LICENSE
 

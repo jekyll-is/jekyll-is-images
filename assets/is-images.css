@@ -1,0 +1,184 @@
+
+.__is_images_gallery {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.__is_images_cell_figure {
+  display: flex;
+  width: var(--is-images-cell-width, 100px);
+  /* height: var(--is-images-cell-height, 100px); */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.__is_images_grid_container {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--is-images-cell-width, 100px)); /* minmax(var(--is-images-cell-width, 100px), 1fr)); */
+  gap: 20px;
+  align-content: center;
+  justify-content: space-around;
+
+  .__is_images_cell {
+    width: var(--is-images-cell-width, 100px);
+    height: var(--is-images-cell-height, 100px);
+  }
+
+}
+
+.__is_images_image {
+  width: var(--is-images-width);
+  aspect-ratio: var(--is-images-aspect-ration);
+  object-fit: var(--is-images-fit, contain);
+}
+
+.__is_images_gallery {
+
+  figcaption {
+    padding: 5px;
+    margin: 5px;
+    border-radius: 10px;
+    font-family: 'PT Sans Caption';
+    text-align: center;
+    background-color: #DDD;
+    width: 100%;
+  }
+
+  & > figcaption {
+    font-size: 110%;
+  }
+
+}
+
+.__is_images_tab_label {
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 1px;
+  border-radius: 10px;
+  border-color: #DDD;
+  background-color: #BBB;
+  color: #DDD;
+  font-size: 90%;
+  font-weight: bold;
+
+  &:hover {
+    color: white;
+    background-color: #AAA;
+  }
+}
+
+.__is_images_tab_radio {
+  position: absolute;
+  opacity: 0;
+  width: 1px;           /* Оставляем минимальный размер, чтобы не ломать фокус */
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  pointer-events: none; /* Клик будет проходить сквозь инпут на label ниже */
+  z-index: -1;          /* Уводим на задний план */
+}
+
+.__is_images_tab_control {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+}
+
+/* Изначально скрываем все вкладки с контентом */
+.__is_images_gallery .__is_images_tab_block {
+  display: none;
+}
+
+/* Переключение: запятые добавлены, лишний класс .__is_images_gallery после ~ удален */
+.__is_images_gallery input[type="radio"]:nth-of-type(1):checked ~ .__is_images_tab_block:nth-of-type(2),
+.__is_images_gallery input[type="radio"]:nth-of-type(2):checked ~ .__is_images_tab_block:nth-of-type(3),
+.__is_images_gallery input[type="radio"]:nth-of-type(3):checked ~ .__is_images_tab_block:nth-of-type(4) {
+  display: var(--is-images-display, block);
+}
+
+.__is_images_gallery input[type="radio"]:nth-of-type(1):checked ~ .__is_images_tab_control label:nth-of-type(1),
+.__is_images_gallery input[type="radio"]:nth-of-type(2):checked ~ .__is_images_tab_control label:nth-of-type(2),
+.__is_images_gallery input[type="radio"]:nth-of-type(3):checked ~ .__is_images_tab_control label:nth-of-type(3) {
+  background-color: #AAA;
+  border: #666 solid 1px;
+  color: white;
+}
+
+.__is_images_gallery input[type="radio"]:nth-of-type(1):focus ~ .__is_images_tab_control label:nth-of-type(1),
+.__is_images_gallery input[type="radio"]:nth-of-type(2):focus ~ .__is_images_tab_control label:nth-of-type(2),
+.__is_images_gallery input[type="radio"]:nth-of-type(3):focus ~ .__is_images_tab_control label:nth-of-type(3) {
+  outline: solid gray 3px;
+}
+
+.__is_images_gallery_navbar {
+  display: none;
+
+  a {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    line-height: 1em;
+    padding: 5px;
+    margin: 2px;
+    border-radius: 50%;
+    background-color: #DDD;
+    color: #666;
+    text-align: center;
+    /* vertical-align: middle; */
+    text-decoration: none;
+
+    &:hover {
+      background-color: #666;
+      color: #EEE;
+    }
+
+    &.active {
+      background-color: white;
+      color: #666;
+      font-weight: bold;
+    }
+  }
+}
+
+.__is_images_gallery input[type="radio"]:nth-of-type(1):checked ~ nav:nth-of-type(1),
+.__is_images_gallery input[type="radio"]:nth-of-type(2):checked ~ nav:nth-of-type(2),
+.__is_images_gallery input[type="radio"]:nth-of-type(3):checked ~ nav:nth-of-type(3) {
+  display: block;
+}
+
+.__is_images_slides_container {
+  display: flex;
+  /* gap: 50px; */
+  width: 100%;
+  overflow-x: hidden;
+  scroll-snap-type: x mandatory; /* Фиксация слайдов при прокрутке */
+  scroll-behavior: smooth; /* Плавная прокрутка */
+  /* scroll-padding: 0 100px; */
+  -webkit-overflow-scrolling: touch;
+
+  .__is_images_slide_figure {
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* width: var(--is-images-slide-width); */
+  }
+
+  .__is_images_slide {
+    width: var(--is-images-slide-width);
+    height: var(--is-images-slide-height);
+  }
+
+  figcaption {
+    width: 90%;
+  }
+}

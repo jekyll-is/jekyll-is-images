@@ -63,10 +63,10 @@ module JekyllIS::Images::Config
       return value if value
     end
 
-    value = DEFAULTS.dig *path
+    value = DEFAULTS.dig(*path)
     return value if value
     if check_default
-      value = DEFAULTS.dig *default
+      value = DEFAULTS.dig(*default)
       return value if value
     end
 
