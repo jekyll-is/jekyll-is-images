@@ -76,9 +76,12 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     img_attrs['alt'] = @alt if @alt
     img_attrs['class'] = img_classes.join(' ')
     img_attrs['style'] = img_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
-    img_attrs['loading'] = 'lazy' if @lazy
+    img_attrs['loading'] = 'lazy' if @lazy || overlay['lazy']
     img_attrs['data-scale'] = transform[:scale] || 1
     img_attrs['data-caption'] = @caption if @caption
+
+    data = @attrs.select { |k, _| k.start_with?("data-") }
+    img_attrs.merge! data
 
     img = "<img #{ img_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>"
 

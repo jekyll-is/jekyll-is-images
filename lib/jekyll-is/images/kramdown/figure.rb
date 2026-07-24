@@ -125,6 +125,9 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     fig_attrs['style'] = styles.map { |k, v| "#{ k }:#{ v };" }.join('') unless styles.empty?
     fig_attrs['data-modes'] = @modes.join(',') unless @modes.empty?
 
+    data = @attrs.select { |k, _| k.start_with?('data-') }
+    fig_attrs.merge! data
+
     if @caption
       if @caption_position == 'top'
         inner = "<figcaption>#{ process_caption(@caption) }</figcaption>\n#{ inner }"
@@ -165,6 +168,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     overlay['scale']  = attrs.delete("#{ prefix }-scale")  || @context.config(mode, 'scale')
     overlay['crop']   = attrs.delete("#{ prefix }-crop")   || @context.config(mode, 'crop')
     overlay['fit']    = attrs.delete("#{ prefix }-fit")    || @context.config(mode, 'fit')
+    overlay['lazy']   = attrs.delete("#{ prefix }-lazy")   || @context.config(mode, 'lazy')
     overlay['salt']   = attrs.delete('salt')
     overlay['attrs']  = attrs
     overlay['mode']   = prefix
@@ -193,6 +197,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     cnt_classes = []
     cnt_classes << "__is_images_#{ mode }_container"
     cnt_classes << '__is_images_tab_block'
+    cnt_classes << '__is_images_only' if @modes.size == 1
     cnt_attrs = {}
     cnt_attrs['class'] = cnt_classes.join(' ')
     cnt_attrs['style'] = cnt_styles.map { |k, v| "#{ k }:#{ v };" }.join('')

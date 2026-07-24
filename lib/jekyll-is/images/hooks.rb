@@ -56,8 +56,11 @@ module JekyllIS::Images::Hooks
             end
           end
         end
-        site.static_files << IS::StaticFile::new(site, '/', '/css/is-images.css', source: "#{ JekyllIS::Images::Info::PATH }/assets/is-images.css")
-        site.static_files << IS::StaticFile::new(site, '/', '/js/is-images.js',   source: "#{ JekyllIS::Images::Info::PATH }/assets/is-images.js")
+        assets_path = "#{ JekyllIS::Images::Info::PATH }/assets"
+        assets = Dir[ '**/*', base: assets_path ].select { File.file?("#{ assets_path }/#{ it }") }
+        assets.each do |file|
+          site.static_files << IS::StaticFile::new(site, '/', file, source: "#{ assets_path }/#{ file }")
+        end
       end
 
       Jekyll::Hooks::register :site, :post_write do |site|
