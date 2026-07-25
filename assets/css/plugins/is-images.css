@@ -42,10 +42,6 @@
   object-fit: var(--is-images-fit, contain);
 }
 
-/* .__is_images_cell {
-  margin: 0px 5px;
-} */
-
 .__is_images_gallery {
 
   figcaption {
@@ -83,13 +79,14 @@
 
 .__is_images_tab_radio {
   position: absolute;
-  opacity: 0;
-  width: 1px;           /* Оставляем минимальный размер, чтобы не ломать фокус */
+  width: 1px;
   height: 1px;
-  margin: 0;
   padding: 0;
-  pointer-events: none; /* Клик будет проходить сквозь инпут на label ниже */
-  z-index: -1;          /* Уводим на задний план */
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .__is_images_tab_control {
@@ -107,29 +104,7 @@
   }
 }
 
-/* Переключение: запятые добавлены, лишний класс .__is_images_gallery после ~ удален */
-.__is_images_gallery input[type="radio"]:nth-of-type(1):checked ~ .__is_images_tab_block:nth-of-type(2),
-.__is_images_gallery input[type="radio"]:nth-of-type(2):checked ~ .__is_images_tab_block:nth-of-type(3),
-.__is_images_gallery input[type="radio"]:nth-of-type(3):checked ~ .__is_images_tab_block:nth-of-type(4) {
-  display: var(--is-images-display, block);
-}
-
-.__is_images_gallery input[type="radio"]:nth-of-type(1):checked ~ .__is_images_tab_control label:nth-of-type(1),
-.__is_images_gallery input[type="radio"]:nth-of-type(2):checked ~ .__is_images_tab_control label:nth-of-type(2),
-.__is_images_gallery input[type="radio"]:nth-of-type(3):checked ~ .__is_images_tab_control label:nth-of-type(3) {
-  background-color: #AAA;
-  border: #666 solid 1px;
-  color: white;
-}
-
-.__is_images_gallery input[type="radio"]:nth-of-type(1):focus ~ .__is_images_tab_control label:nth-of-type(1),
-.__is_images_gallery input[type="radio"]:nth-of-type(2):focus ~ .__is_images_tab_control label:nth-of-type(2),
-.__is_images_gallery input[type="radio"]:nth-of-type(3):focus ~ .__is_images_tab_control label:nth-of-type(3) {
-  outline: solid gray 3px;
-}
-
 .__is_images_gallery_navbar {
-  display: none;
 
   a {
     display: inline-block;
@@ -158,14 +133,25 @@
   }
 }
 
-.__is_images_only ~ .__is_images_gallery_navbar {
-    display: block;
+.__is_images_grid_item, .__is_images_slides_item {
+  display: none;
 }
 
-.__is_images_gallery input[type="radio"]:nth-of-type(1):checked ~ nav:nth-of-type(1),
-.__is_images_gallery input[type="radio"]:nth-of-type(2):checked ~ nav:nth-of-type(2),
-.__is_images_gallery input[type="radio"]:nth-of-type(3):checked ~ nav:nth-of-type(3) {
-  display: block;
+.__is_images_grid_radio:checked ~ .__is_images_grid_item,
+.__is_images_slides_radio:checked ~ .__is_images_slides_item {
+  display: var(--is-images-display, block);
+}
+
+.__is_images_grid_radio:checked ~ .__is_images_tab_control .__is_images_grid_label,
+.__is_images_slides_radio:checked ~ .__is_images_tab_control .__is_images_slides_label {
+  background-color: #AAA;
+  border: #666 solid 1px;
+  color: white;
+}
+
+.__is_images_grid_radio:focus ~ .__is_images_tab_control .__is_images_grid_label,
+.__is_images_slides_radio:focus ~ .__is_images_tab_control .__is_images_slides_label {
+  outline: solid gray 3px;
 }
 
 .__is_images_slides_container {

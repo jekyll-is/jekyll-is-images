@@ -61,10 +61,11 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
   end
 
   # @private
+  # TODO: брать подписи из конфига
   MODES = {
     'grid' => {
       child: 'cell',
-      label: 'table',
+      label: 'grid',
       display: 'grid',
       navbar: false
     },
@@ -75,6 +76,8 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       navbar: true
     }
   }
+
+  # TODO: Подумать над тем, чтобы вынести разные представления галерей в классы...
 
   def to_html
     case @children.size
@@ -141,14 +144,12 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       labels = ''
       first = true
       @modes.each do |mode|
-        inputs += "<input class=\"__is_images_tab_radio\" type=\"radio\" id=\"#{ @id }-#{ mode }\" name=\"mode-#{ @id }\"#{ first ? 'checked' : '' }>"
+        inputs += "<input class=\"__is_images_tab_radio __is_images_#{ mode }_radio\" type=\"radio\" id=\"#{ @id }-#{ mode }\" name=\"mode-#{ @id }\"#{ first ? 'checked' : '' }>"
         first = false
-        labels += "<label class=\"__is_images_tab_label\" for=\"#{ @id }-#{ mode }\">#{ MODES.dig(mode, :label) }</label>"
+        labels += "<label class=\"__is_images_tab_label __is_images_#{ mode }_label\" for=\"#{ @id }-#{ mode }\">#{ MODES.dig(mode, :label) }</label>"
       end
       inner = "#{ inputs }<div class=\"__is_images_tab_control\">#{ labels }</div>#{ inner }"
     end
-
-    # TODO: реализовать блок переключателей
 
     "<figure #{ fig_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>\n#{ inner }\n</figure>"
   end
@@ -197,12 +198,16 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     cnt_classes = []
     cnt_classes << "__is_images_#{ mode }_container"
     cnt_classes << '__is_images_tab_block'
-    cnt_classes << '__is_images_only' if @modes.size == 1
+    if @modes.size == 1
+      cnt_classes << '__is_images_only'
+    else
+      cnt_classes << "__is_images_#{ mode }_item"
+    end
     cnt_attrs = {}
     cnt_attrs['class'] = cnt_classes.join(' ')
     cnt_attrs['style'] = cnt_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
     # if navbar
-      nav = "<nav class=\"__is_images_gallery_navbar\">#{ nav }</nav>"
+      nav = "<nav class=\"__is_images_gallery_navbar __is_images_#{ mode }_item\">#{ nav }</nav>"
     # end
     "<div #{ cnt_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>#{ items.join("\n") }</div>#{ nav }"
   end

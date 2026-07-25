@@ -36,7 +36,7 @@ module JekyllIS::Images::Hooks
             assets = <<-HTML
               <!-- jekyll-is-images plugin stuff -->
               <link rel="stylesheet" href="/css/is-images.css" />
-              <script src="/js/is-images.js"></script>
+              <script type="module" src="/js/is-images.js"></script>
               <!-- end of jekyll-is-images stuff -->
             HTML
 
