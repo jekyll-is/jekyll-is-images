@@ -14,17 +14,24 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     @children = []
   end
 
+  def single?
+    @children.size == 1
+  end
+
   def gallery?
     @children.size > 1
   end
 
-  attr_reader :caption, :modes
+  attr_reader :caption, :modes, :shaped, :shift, :width
 
   def apply element
     super(element)
     @id ||= gen_id
     @caption = @attrs.delete('caption')
     @caption_position = @attrs.delete('caption-position')
+    @shift = @attrs.delete('shift')&.to_i
+    @up = @attrs.delete('up')&.to_i
+    @width = @attrs.delete('width')&.to_i
     @modes = @attrs.delete('modes')&.split(',') || @context.config('gallery', 'modes')&.split(',') || []
     element.children.each do |child|
       if [ :a, :img ].include?(child.type)
@@ -34,7 +41,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       end
     end
 
-    if @children.size == 1
+    if single?
       image = @children.first
       @caption ||= image.caption
       @caption_position ||= image.caption_position
@@ -44,6 +51,10 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       image.flags.clear
       @classes.merge image.classes
       image.classes.clear
+      @shaped = @flags.delete?('shape')
+      @shift ||= image.shift
+      @up ||= image.up
+      @width ||= image.width
     end
 
     if gallery?
@@ -111,16 +122,31 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     "fig-#{ context.page.data['__is_images_figure_count'] }"
   end
 
-  def generate_outer_html inner
+  WIDTH_STEP = 50
+
+  def width_class
+    if @width
+      nearest = (@width.to_f / WIDTH_STEP).ceil * WIDTH_STEP
+      "__is_images_width_#{ nearest }"
+    end
+  end
+
+  def generate_outer_html inner, single_url: nil
 
     classes = @classes.dup
     classes << '__is_images_figure'
     classes << '__is_images_gallery' if gallery?
+    classes << '__is_images_single' if single?
+    classes << '__is_images_shaped' if @shaped
+    classes << width_class if @width
     @flags.each do |flag|
       classes << "__is_images__#{ flag }"
     end
 
     styles = @styles.dup
+    styles['shape-outside'] = "url(#{ single_url })" if single_url && @shaped
+    styles['--is-images-shift'] = "#{ @shift }px" if @shift
+    styles['--is-images-up'] = "#{ @up }px" if @up
 
     fig_attrs = {}
     fig_attrs['id'] = @id if @id
@@ -156,7 +182,8 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
 
   def generate_simple_html
     overlay = { 'mode' => 'single' }   # Мы НЕ перекрываем ничего для одиночного изображения.
-    generate_outer_html @children.first.to_html(overlay: overlay)
+    inner = @children.first.to_html(overlay: overlay)
+    generate_outer_html inner, single_url: overlay['__url']
   end
 
   def generate_gallery_html mode, hide

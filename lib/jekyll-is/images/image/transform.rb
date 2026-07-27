@@ -193,37 +193,38 @@ module JekyllIS::Images::Image::Transform
     height = (height.to_f * scale.to_f).round.to_i if height && scale && scale != 1
 
     resize = if width && !height
-      "#{ width }x"
+      "#{ width }x>"
     elsif height && !width
-      "x#{ height }"
+      "x#{ height }>"
     elsif width && height
       if fit == 'cover'
-        "#{ width }x#{ height }^"
+        "#{ width }x#{ height }^>"
       else
-        "#{ width }x#{ height }"
+        "#{ width }x#{ height }>"
       end
     else
       nil
     end
 
-    image = MiniMagick::Image::open source
-    begin
-      image.combine_options do |img|
-        img.crop crop if crop
-        img.resize resize if resize
-        img.strip
-        img.quality options.quality if options.quality
-        img.colorspace 'sRGB'
-        options.defines.each do |value|
-          img.define value
-        end
+    full = context.site.in_source_dir target
+    FileUtils.mkdir_p File.dirname(full)
+    is_svg = File.extname(source).downcase == '.svg'
+    MiniMagick::convert do |cmd|
+      if is_svg
+        cmd << '-density' << '300'
+        cmd << '-background' << 'none'
       end
-      image.format format
-      full = context.site.in_source_dir target
-      FileUtils.mkdir_p File.dirname(full)
-      image.write full
-    ensure
-      image&.destroy!
+      cmd << source
+      cmd.crop crop if crop
+      cmd.resize resize if resize
+      cmd.strip
+      cmd.quality options.quality if options.quality
+      cmd.colorspace 'sRGB'
+      options.defines.each do |value|
+        cmd.define value
+      end
+      cmd.format format
+      cmd << "#{ format }:#{ full }"
     end
 
     target

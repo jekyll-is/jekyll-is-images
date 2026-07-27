@@ -33,9 +33,10 @@ module JekyllIS::Images::Hooks
           #  самостоятельно в шаблонах. Просто не использовать их при включенном плагие в целом — не имеет
           #  смысла.
           unless context.config('disable_auto_stuff')
+            # FIXME: вернуть загрузку без /plugins/
             assets = <<-HTML
               <!-- jekyll-is-images plugin stuff -->
-              <link rel="stylesheet" href="/css/is-images.css" />
+              <link rel="stylesheet" href="/css/plugins/is-images.css" />
               <script type="module" src="/js/is-images.js"></script>
               <!-- end of jekyll-is-images stuff -->
             HTML

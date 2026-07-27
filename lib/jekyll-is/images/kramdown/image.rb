@@ -15,12 +15,11 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     @figure = figure
   end
 
-  attr_reader :alt, :src, :href, :title, :width, :height, :scale, :crop, :fit, :shift, :caption, :lazy, :salt, :format, :caption_position
+  attr_reader :alt, :src, :href, :title, :width, :height, :scale, :crop, :fit, :shift, :up, :caption, :lazy, :salt, :format, :caption_position
 
   def apply element
     super(element)
     super(element.children.first) if element.type == :a
-    @id ||= gen_id
     @alt = @attrs.delete('alt')
     @src = @attrs.delete('src')
     @format = @attrs.delete('format') || @context.detect_format(@src)
@@ -34,13 +33,14 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     @crop = @attrs.delete('crop')
     @fit = @attrs.delete('fit')
     @shift = @attrs.delete('shift')&.to_i
+    @up = @attrs.delete('up')&.to_i
     @caption = @attrs.delete('caption')
     @alt ||= @title || @caption || ''
     @title ||= @alt unless @alt.nil? || @alt.empty?
     @title ||= @caption
     @title = nil if @title == ''
     @caption = nil if @caption == ''
-    @caption ||= @alt if @flags.delete('caption')
+    @caption ||= @alt if @flags.delete?('caption')
     @lazy = @flags.delete?('lazy')
     @salt = @attrs.delete('salt')
     @caption_position = @attrs.delete('caption-position')
@@ -52,6 +52,8 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     transform = transform_parameters overlay
     image = JekyllIS::Images::Image::transform @context, @src, transform
 
+    overlay['__url'] = image.url
+
     img_styles = @styles.dup
     if transform[:width]
       img_styles['--is-images-width'] = "#{ transform[:width] }px"
@@ -62,6 +64,7 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     img_styles['--is-images-scale'] = transform[:scale] if transform[:scale]
     img_styles['--is-images-fit'] = transform[:fit] if transform[:fit]
     img_styles['--is-images-shift'] = "#{ @shift }px" if @shift
+    img_styles['--is-images-up'] = "#{ @up }px" if @up
 
     img_classes = @classes.dup
     img_classes << '__is_images_image'
@@ -78,7 +81,7 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     img_attrs['style'] = img_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
     img_attrs['loading'] = 'lazy' if @lazy || overlay['lazy']
     img_attrs['data-scale'] = transform[:scale] || 1
-    img_attrs['data-caption'] = @caption if @caption
+    img_attrs['data-caption'] = process_caption(@caption) if @caption
 
     data = @attrs.select { |k, _| k.start_with?("data-") }
     img_attrs.merge! data
@@ -108,10 +111,8 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
 
   private
 
-  def gen_id
-    context.page.data["__is_images_image_count"] ||= 0
-    context.page.data["__is_images_image_count"] += 1
-    "img-#{context.page.data["__is_images_image_count"]}"
+  def process_caption caption
+    @context.markdown.convert(caption).chomp.delete_prefix("<p>").delete_suffix("</p>")
   end
 
   def transform_parameters overlay
