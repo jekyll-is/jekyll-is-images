@@ -36,6 +36,23 @@ module JekyllIS::Images::Config
     'gallery' => {
       'modes' => 'grid,slides',
       'caption_position' => 'top'
+    },
+    'seo_image' => {
+      'format' => 'webp',
+      'width' => 1200,
+      'height' => 630,
+      'date_format' => '%Y-%m-%d',
+      'overlay' => {
+        'width' => 1150,
+        'bottom' => 150,
+        'top' => 50,
+        'padding' => 25,
+        'background' => '#3339',
+        'foreground' => '#EEEE'
+      },
+      'font' => {
+        'date_site' => 24
+      }
     }
   }.freeze
 

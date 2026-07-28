@@ -3,6 +3,7 @@
 require 'is-kramdown-hooked'
 
 require_relative 'kramdown/processor'
+require_relative 'image'
 
 module JekyllIS::Images::Hooks
 
@@ -20,6 +21,7 @@ module JekyllIS::Images::Hooks
             processor = JekyllIS::Images::Kramdown::Processor::new site, page
             processor.process parser.root
           end
+          JekyllIS::Images::Image.replace_page_image site, page
         end
       end
 
