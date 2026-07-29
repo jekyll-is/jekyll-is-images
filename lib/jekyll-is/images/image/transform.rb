@@ -6,6 +6,7 @@ require 'nokogiri'
 require 'is-static-files'
 
 require_relative 'data'
+require_relative 'cache'
 
 module JekyllIS::Images::Image::Transform
 
@@ -14,43 +15,39 @@ module JekyllIS::Images::Image::Transform
   def transform context, source, params
 
     # Проверяем на assets, возвращаем как есть, если так.
-    return from_file context, source, source if assets?(source)
+    return JekyllIS::Images::Image::Info[source, nil, nil] if assets?(source)
 
-    digest = source_digest context, source, params
-    splitted_digest = "#{ digest[0..1] }/#{ digest[2..3] }/#{ digest[4..(context.config(DIGITS_KEY).to_i + 3)] }"
-    url = "/#{ context.target_path_prefix }/#{ splitted_digest }.#{ params[:format] }"
-    path = "#{ context.cache_path }/processed/#{ splitted_digest }.#{ params[:format] }"
-
-    # Ищем в кэше.
-    result = from_file context, url, path
-    return result if result
-
-    source_path = if external?(source)
-      # Скачиваем. Если не удается скачать, возвращаем url как есть без дополнительных данных.
-      #  Исходим из того, что проблемы со скачиванием могут быть временными.
-      downloaded = download_file context, source, splitted_digest, params
-      unless downloaded
-        context.warning "Failed download #{ source.inspect } on page #{ context.page.relative_path.inspect }"
-        return JekyllIS::Images::Image::Info[source, nil, nil]
+    digest = cache.source_digest(context, source, **params)
+    cache.static_info context, digest, params[:format] do |full|
+      source_path = if external?(source)
+        # Скачиваем. Если не удается скачать, возвращаем url как есть без дополнительных данных.
+        #  Исходим из того, что проблемы со скачиванием могут быть временными.
+        downloaded = download_file context, source, splitted_digest, params
+        unless downloaded
+          context.warning "Failed download #{ source.inspect } on page #{ context.page.relative_path.inspect }"
+          return JekyllIS::Images::Image::Info[source, nil, nil]
+        end
+        downloaded
+      else
+        context.site.in_source_dir source
       end
-      downloaded
-    else
-      context.site.in_source_dir source
-    end
 
-    if params[:format] == 'svg'
-      convert_svg context, source_path, path, params
-    else
-      convert_image context, source_path, path, params
+      if params[:format] == 'svg'
+        convert_svg context, source_path, full, params
+      else
+        convert_image context, source_path, full, params
+      end
     end
-
-    from_file context, url, path
 
   rescue => ex
     context.error "Error with file #{ source.inspect } on page #{ context.page.relative_path.inspect }: #{ ex.inspect }"
   end
 
   private
+
+  def cache
+    JekyllIS::Images::Cache
+  end
 
   def assets? source
     source.start_with?('/')
@@ -59,49 +56,6 @@ module JekyllIS::Images::Image::Transform
   def external? source
     # Обрабатываем только HTTP(S) для простоты. Другие протоколы не особо актуальны.
     source.start_with?('http://') || source.start_with?('https://')
-  end
-
-  def from_file context, url, path
-    full = context.site.in_source_dir path
-    return nil unless File.exist?(full)
-
-    second = if path.start_with?('/')
-      path[1..]
-    else
-      "/#{ path }"
-    end
-    static = context.site.static_files.find { it.relative_path == path || it.relative_path == second || it.path == path || it.path == second }
-    unless static
-      static = IS::StaticFile::new context.site, '/', url, source: path
-      context.site.static_files << static
-    end
-
-    w = nil
-    h = nil
-    magick = MiniMagick::Image::open full
-    begin
-      w = magick.width
-      h = magick.height
-    ensure
-      magick&.destroy!
-    end
-
-    JekyllIS::Images::Image::Info[static.url, w, w.to_r / h.to_r]
-  end
-
-  def source_digest context, source, params
-    sha256 = Digest::SHA256::new
-    sha256.update source
-    unless external?(source)
-      full = context.site.in_source_dir source
-      File::open full, "rb" do |file|
-        while chunk = file.read(65536)
-          sha256.update chunk
-        end
-      end
-    end
-    sha256.update JSON::generate(params, sort_keys: true)
-    sha256.hexdigest
   end
 
   def download_file context, source, digest, params, limit = 3
@@ -141,7 +95,7 @@ module JekyllIS::Images::Image::Transform
     return nil
   end
 
-  def convert_svg context, source, target, params
+  def convert_svg context, source, full, params
 
     content = File.read source
     doc = Nokogiri::XML(content)
@@ -172,14 +126,12 @@ module JekyllIS::Images::Image::Transform
     svg['height'] = height.to_s
 
     minified = svg.to_xml(indent: 0).gsub(/\n/, " ").gsub(/\s+/, " ")
-    full = context.site.in_source_dir target
-    FileUtils.mkdir_p File.dirname(full)
     File.write full, minified
 
-    target
+    full
   end
 
-  def convert_image context, source, target, params
+  def convert_image context, source, full, params
 
     format = params[:format]
     options = params[:options]
@@ -206,8 +158,6 @@ module JekyllIS::Images::Image::Transform
       nil
     end
 
-    full = context.site.in_source_dir target
-    FileUtils.mkdir_p File.dirname(full)
     is_svg = File.extname(source).downcase == '.svg'
     MiniMagick::convert do |cmd|
       if is_svg
@@ -227,7 +177,7 @@ module JekyllIS::Images::Image::Transform
       cmd << "#{ format }:#{ full }"
     end
 
-    target
+    full
   end
 
 end

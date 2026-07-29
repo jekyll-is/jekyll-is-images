@@ -41,17 +41,17 @@ module JekyllIS::Images::Config
       'format' => 'webp',
       'width' => 1200,
       'height' => 630,
-      'date_format' => '%Y-%m-%d',
+      'date_format' => '%Y/%m/%d',
       'overlay' => {
         'width' => 1150,
         'bottom' => 150,
         'top' => 50,
         'padding' => 25,
-        'background' => '#3339',
+        'background' => '#6669',
         'foreground' => '#EEEE'
       },
       'font' => {
-        'date_site' => 24
+        'date_size' => 24
       }
     }
   }.freeze
