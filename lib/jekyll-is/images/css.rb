@@ -4,6 +4,8 @@ require_relative 'info'
 
 module JekyllIS::Images::CSS
 
+  # @param [JekyllIS::Images::Context] context
+  # @return [String]
   def generate context
     max_width = context['max_text_width'] || 1920
     min_width = context['min_text_width'] || 200

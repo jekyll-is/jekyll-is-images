@@ -1,5 +1,6 @@
 --title "JekyllIS::Images"
 --readme README.md
+--files README-ru.md
 --protected
 --no-private
 lib/**/*.rb
