@@ -94,6 +94,8 @@ module JekyllIS::Images::Context::Config
     nil
   end
 
+  alias :[] :config
+
   Options = Data::define :quality, :defines
 
   DEFINE_KEYS = {
