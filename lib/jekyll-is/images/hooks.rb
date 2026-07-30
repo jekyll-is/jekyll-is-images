@@ -51,13 +51,7 @@ module JekyllIS::Images::Hooks
       Jekyll::Hooks::register :site, :after_reset do |site|
         context = JekyllIS::Images::Context[site, nil]
         if File.directory?(site.in_source_dir(".jekyll-cache/Jekyll/Cache/Jekyll--Converters--Markdown"))
-          cache_path = site.in_source_dir context.cache_path
-          if File.directory?("#{cache_path}/processed")
-            cache_files = Dir[ '**/*', base: "#{ cache_path }/processed" ].select { File.file?("#{cache_path}/processed/#{ it }") }
-            cache_files.each do |file|
-              site.static_files << IS::StaticFile::new(site, '/', "/img/#{ file }", source: "#{ context.cache_path }/processed/#{ file }")
-            end
-          end
+          JekyllIS::Images::Cache::restore_static_files context
         end
         assets_path = "#{ JekyllIS::Images::Info::PATH }/assets"
         assets = Dir[ '**/*', base: assets_path ].select { File.file?("#{ assets_path }/#{ it }") }

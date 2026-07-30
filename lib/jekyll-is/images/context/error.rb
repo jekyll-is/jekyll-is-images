@@ -5,11 +5,13 @@ require 'jekyll'
 require_relative '../info'
 require_relative 'config'
 
-module JekyllIS::Images::Error
+module JekyllIS::Images::Context::Error
 
-  include JekyllIS::Images::Config
+  include JekyllIS::Images::Context::Config
 
   ABORT_KEY = 'abort_on_error'
+
+  private_constant :ABORT_KEY
 
   def abort_on_error?
     @abort_on_error ||= config(ABORT_KEY)

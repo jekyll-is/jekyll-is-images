@@ -6,8 +6,8 @@ require_relative 'context/error'
 
 class JekyllIS::Images::Context
 
-  include JekyllIS::Images::Config
-  include JekyllIS::Images::Error
+  include JekyllIS::Images::Context::Config
+  include JekyllIS::Images::Context::Error
 
   attr_reader :site, :page
 

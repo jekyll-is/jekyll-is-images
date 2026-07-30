@@ -4,12 +4,16 @@ require 'date'
 
 require_relative '../context'
 require_relative 'cache'
-require_relative 'transform'
+require_relative 'magick'
 
 module JekyllIS::Images::Image::SEO
-  include JekyllIS::Images::Image::Transform
+
+  include JekyllIS::Images::Image::Cache
+  include JekyllIS::Images::Image::Magick
 
   IMAGE_PARAMS = 'seo_image'
+
+  private_constant :IMAGE_PARAMS
 
   def replace_page_image site, page
     source = page.data['image']
@@ -48,8 +52,8 @@ module JekyllIS::Images::Image::SEO
       options:
     }
 
-    digest = cache.source_digest(context, source, **params)
-    info = cache.static_info context, digest, params[:format] do |full|
+    digest = source_digest(context, source, **params)
+    info = static_info context, digest, params[:format] do |full|
       begin
         base = base_image context, source, params
         base.combine_options do |img|
@@ -99,22 +103,19 @@ module JekyllIS::Images::Image::SEO
 
   private
 
-  def cache
-    JekyllIS::Images::Cache
-  end
-
   def meta_image context, params
-    digest = cache.source_digest(
+    digest = source_digest(
       context,
       nil,
       **params.slice(:overlay_width, :padding, :top_height, :overlay_foreground, :date_font, :date_font_size, :date, :site_font, :site_font_size, :site, :salt)
     )
-    cache.magick_image context, digest, 'meta.png' do |full|
-      MiniMagick::convert do |cmd|
-        cmd.size "#{ params[:overlay_width] - 2 * params[:padding] }x#{ params[:top_height] }"
-        cmd.background 'none'
-        cmd.fill params[:overlay_foreground]
-        cmd << 'canvas:'
+    magick_image context, digest, 'meta.png' do |full|
+      magick_generate(
+        full,
+        width: (params[:overlay_width] - 2 * params[:padding]),
+        height: params[:top_height],
+        foreground: params[:overlay_foreground]
+      ) do |cmd|
         cmd.gravity 'West'
         cmd.font params[:date_font] if params[:date_font]
         cmd.pointsize params[:date_font_size]
@@ -123,24 +124,23 @@ module JekyllIS::Images::Image::SEO
         cmd.font params[:site_font] if params[:site_font]
         cmd.pointsize params[:site_font_size]
         cmd.annotate '+0+0', params[:site]
-        cmd.format 'png'
-        cmd << "png:#{ full }"
       end
     end
   end
 
   def caption_image context, params
-    digest = cache.source_digest(context, nil, **params.slice(:overlay_width, :padding, :bottom_height, :caption_font, :overlay_foreground, :caption, :salt))
-    cache.magick_image context, digest, 'caption.png' do |full|
-      MiniMagick::convert do |cmd|
-        cmd.size "#{ params[:overlay_width] - 2 * params[:padding] }x#{ params[:bottom_height] - 2 * params[:padding] }"
-        cmd.background 'none'
+    digest = source_digest(context, nil, **params.slice(:overlay_width, :padding, :bottom_height, :caption_font, :overlay_foreground, :caption, :salt))
+    magick_image context, digest, 'caption.png' do |full|
+      magick_generate(
+        full,
+        width: (params[:overlay_width] - 2 * params[:padding]),
+        height: (params[:bottom_height] - 2 * params[:padding]),
+        foreground: params[:overlay_foreground],
+        canvas: false
+      ) do |cmd|
         cmd.font params[:caption_font] if params[:caption_font]
-        cmd.fill params[:overlay_foreground]
-        cmd.gravity 'Center'
-        cmd << "caption:#{ params[:caption] }"
-        cmd.format 'png'
-        cmd << "png:#{ full }"
+        cmd.gravity "Center"
+        cmd << "caption:#{params[:caption]}"
       end
     end
   end
@@ -148,40 +148,20 @@ module JekyllIS::Images::Image::SEO
   def background_image context, height, params
     used_params = params.slice :overlay_width, :overlay_background, :salt
     used_params[:height] = height
-    digest = cache.source_digest(context, nil, **used_params)
-    cache.magick_image context, digest, 'background.png' do |full|
-      MiniMagick::convert do |cmd|
-        cmd.size "#{ params[:overlay_width] }x#{ height }"
-        cmd.background params[:overlay_background]
-        cmd << 'canvas:'
-        cmd.format 'png'
-        cmd << "png:#{ full }"
-      end
+    digest = source_digest(context, nil, **used_params)
+    magick_image context, digest, 'background.png' do |full|
+      magick_generate full, width: params[:overlay_width], height: height, background: params[:overlay_background]
     end
   end
 
   def base_image context, source, params
     base_params = params.slice :format, :crop, :options, :salt
-    digest = cache.source_digest(context, source, **base_params)
-    cache.magick_image context, digest, "cover.#{ params[:format] }" do |full|
-      is_svg = File.extname(source).downcase == '.svg'
-      MiniMagick::convert do |cmd|
-        if is_svg
-          cmd << '-density' << '300'
-          cmd << '-background' << 'none'
-        end
-        cmd << source
-        cmd.crop params[:crop] if params[:crop]
-        cmd.strip
-        cmd.quality params[:options].quality if params[:options]&.quality
-        cmd.colorspace 'sRGB'
-        params[:options]&.defines&.each do |value|
-          cmd.define value
-        end
-        cmd.format params[:format]
-        cmd << "#{ params[:format] }:#{ full }"
-      end
+    digest = source_digest(context, source, **base_params)
+    magick_image context, digest, "cover.#{ params[:format] }" do |full|
+      magick_convert full, source, format: params[:format], options: params[:options], crop: params[:crop]
     end
   end
+
+  extend self
 
 end

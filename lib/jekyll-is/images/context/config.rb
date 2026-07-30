@@ -2,7 +2,9 @@
 
 require_relative '../info'
 
-module JekyllIS::Images::Config
+class JekyllIS::Images::Context; end
+
+module JekyllIS::Images::Context::Config
 
   DEFAULTS = {
     'abort_on_error' => true,
@@ -64,6 +66,8 @@ module JekyllIS::Images::Config
   TARGET_PREFIX_KEY = 'target_prefix'
   CACHE_PATH_KEY = 'cache_path'
 
+  private_constant :CONFIG_KEY, :FORMATS_KEY, :OPTIONS_KEY, :TARGET_PREFIX_KEY, :CACHE_PATH_KEY
+
   def config *path, check_default: false
 
     value = @page&.data&.dig CONFIG_KEY, *path
@@ -94,7 +98,9 @@ module JekyllIS::Images::Config
 
   DEFINE_KEYS = {
     'avif' => 'heic'
-  }
+  }.freeze
+
+  private_constant :DEFINE_KEYS
 
   def options format, attrs = {}
 

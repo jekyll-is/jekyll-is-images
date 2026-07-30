@@ -11,11 +11,19 @@ require_relative '../info'
 require_relative '../context'
 require_relative 'data'
 
-module JekyllIS::Images::Cache
+module JekyllIS::Images::Image::Cache
 
   DIGITS_KEY = "cache_digits"
 
-  class << self
+  # @api private
+  GEN = 'gen'
+
+  # @api private
+  TMP = 'tmp'
+
+  private_constant :DIGITS_KEY, :GEN, :TMP
+
+  # class << self
 
     # @param [JekyllIS::Images::Context] context
     # @param [String] digest
@@ -24,15 +32,9 @@ module JekyllIS::Images::Cache
     # @yieldparam [String] target Path for result (full).
     # @yieldreturn [void] ignored
     # @return [JekyllIS::Images::Image::Info]
-    def static_info context, digest, format
-      splitted = split_digest context, digest
-      path = "#{ context.cache_path }/gen/#{ splitted }.#{ format }"
-      full = context.site.in_source_dir path
-      unless File.file?(full)
-        FileUtils.mkdir_p File.dirname(full)
-        yield full if block_given?
-      end
-      raise "File not found: #{ path.inspect }" unless File.file?(full)
+    def static_info context, digest, format, &block
+      full, path, url = cached_file(context, GEN, digest, '.' + format, &block)
+      raise "File not found: #{ path.inspect }" unless full && File.file?(full)
       second = if path.start_with?('/')
         path[1..]
       else
@@ -40,7 +42,6 @@ module JekyllIS::Images::Cache
       end
       static = context.site.static_files.find { it.relative_path == path || it.relative_path == second || it.path == path || it.path == second }
       unless static
-        url = "/#{ context.target_path_prefix }/#{ splitted }.#{ format }"
         static = IS::StaticFile::new context.site, '/', url, source: path
         context.site.static_files << static
       end
@@ -53,6 +54,30 @@ module JekyllIS::Images::Cache
       JekyllIS::Images::Image::Info[static.url, props[:width], (props[:width] && props[:height] ? props[:width].to_r / props[:height].to_r : nil)]
     end
 
+    # @api private
+    # @param [JekyllIS::Images::Context] context
+    # @param [String] digest
+    # @param [String] suffix
+    # @yield File creation
+    # @yieldparam [String] terget Path for resulting file
+    # @yieldreturn [void] ignored
+    # @return [Array<String, String, String>] full path, inner path, target url
+    def cached_file context, prefix, digest, suffix
+      splitted = split_digest context, digest
+      path = "#{ context.cache_path }/#{ prefix }/#{ splitted }#{ suffix }"
+      url = "/#{ context.target_path_prefix }/#{ splitted }#{ suffix }"
+      full = context.site.in_source_dir path
+      unless File.file?(full)
+        FileUtils.mkdir_p File.dirname(full)
+        yield full if block_given?
+      end
+      if File.file?(full)
+        [ full, path, url ]
+      else
+        [ nil, nil, nil ]
+      end
+    end
+
     # @param [JekyllIS::Images::Context] context
     # @param [String] digest
     # @param [String] suffix
@@ -60,15 +85,9 @@ module JekyllIS::Images::Cache
     # @yieldparam [String] target Path for result (full).
     # @yieldreturn [void] ignored
     # @return [MiniMagick::Image]
-    def magick_image context, digest, suffix
-      splitted = split_digest context, digest
-      path = "#{ context.cache_path }/tmp/#{ splitted }-#{ suffix }"
-      full = context.site.in_source_dir path
-      unless File.file?(full)
-        FileUtils.mkdir_p File.dirname(full)
-        yield full if block_given?
-      end
-      raise "File not found: #{ path.inspect }" unless File.file?(full)
+    def magick_image context, digest, suffix, &block
+      full, path, _ = cached_file(context, TMP, digest, suffix, &block)
+      raise "File not found: #{ path.inspect }" unless full && File.file?(full)
       MiniMagick::Image::open full
     end
 
@@ -91,6 +110,20 @@ module JekyllIS::Images::Cache
       sha256.hexdigest
     end
 
+    # @param [JekyllIS::Images::Context] context
+    # @return [void]
+    def restore_static_files context
+      cache_path = context.site.in_source_dir context.cache_path
+      generated_path = "#{ cache_path }/#{ GEN }"
+      if File.directory?(generated_path)
+        cache_files = Dir[ '**/*', base: generated_path ].select { File.file? "#{ generated_path }/#{ it }" }
+        cache_files.each do |file|
+          url = "/#{ context.target_path_prefix }/#{ file }"
+          context.site.static_files << IS::StaticFile::new(context.site, '/', url, source: "#{ context.cache_path }/#{ GEN }/#{ file }")
+        end
+      end
+    end
+
     private
 
     def jekyll_cache
@@ -101,6 +134,8 @@ module JekyllIS::Images::Cache
       "#{ digest[0..1] }/#{ digest[2..3] }/#{ digest[4..(context.config(DIGITS_KEY).to_i + 3)] }"
     end
 
-  end
+  # end
+
+  extend self
 
 end
