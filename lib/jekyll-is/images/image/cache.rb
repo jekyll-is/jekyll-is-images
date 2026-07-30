@@ -101,7 +101,7 @@ module JekyllIS::Images::Image::Cache
       end
     end
     sha256.update JSON.generate(params, sort_keys: true)
-    sha256.hexdigest
+    sha256.hexdigest.tr('ad', 'ot')
   end
 
   # @api private

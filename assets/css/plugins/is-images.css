@@ -1,3 +1,4 @@
+
 .__is_images_figure {
   margin: 10px;
   position: relative;
@@ -33,7 +34,6 @@
   padding: 5px;
   display: flex;
   width: calc(var(--is-images-cell-width, 100px) + 10px);
-  /* height: var(--is-images-cell-height, 100px); */
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -58,20 +58,6 @@
     width: var(--is-images-cell-width, 100px);
     height: var(--is-images-cell-height, 100px);
   }
-}
-
-/* TODO: сделать корректные ограничения для сдвигов (на базе container queries) */
-
-.__is_images__right {
-  float: right;
-  margin-right: calc(0px - var(--is-images-shift, 0px));
-  margin-top: calc(0px - var(--is-images-up, 0px));
-}
-
-.__is_images__left {
-  float: left;
-  margin-left: calc(0px - var(--is-images-shift, 0px));
-  margin-top: calc(0px - var(--is-images-up, 0px));
 }
 
 .__is_images_shaped {

@@ -4,6 +4,7 @@ require 'is-kramdown-hooked'
 
 require_relative 'kramdown/processor'
 require_relative 'image'
+require_relative 'css'
 
 module JekyllIS::Images::Hooks
 
@@ -51,13 +52,14 @@ module JekyllIS::Images::Hooks
       Jekyll::Hooks::register :site, :after_reset do |site|
         context = JekyllIS::Images::Context[site, nil]
         if File.directory?(site.in_source_dir(".jekyll-cache/Jekyll/Cache/Jekyll--Converters--Markdown"))
-          JekyllIS::Images::Cache::restore_static_files context
+          JekyllIS::Images::Image::Cache::restore_static_files context
         end
         assets_path = "#{ JekyllIS::Images::Info::PATH }/assets"
         assets = Dir[ '**/*', base: assets_path ].select { File.file?("#{ assets_path }/#{ it }") }
         assets.each do |file|
           site.static_files << IS::StaticFile::new(site, '/', file, source: "#{ assets_path }/#{ file }")
         end
+        site.static_files << IS::StaticFile::new(site, '/', '/css/plugins/is-images/floats.css', content: JekyllIS::Images::CSS::generate(context))
       end
 
       Jekyll::Hooks::register :site, :post_write do |site|
@@ -65,7 +67,7 @@ module JekyllIS::Images::Hooks
         is_live = site.config['watch'] || site.config['serving'] || site.incremental? || JekyllIS::Images.cached_environment
         cache_path = site.in_source_dir context.cache_path
         if !is_live && File.directory?(cache_path)
-          JekyllIS::Images::Cache::clean_unused_files context
+          JekyllIS::Images::Image::Cache::clean_unused_files context
         end
       end
 
