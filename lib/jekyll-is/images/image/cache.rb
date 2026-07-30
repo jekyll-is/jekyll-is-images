@@ -53,7 +53,7 @@ module JekyllIS::Images::Image::Cache
   # @param [String] digest
   # @param [String] suffix
   # @yield File creation
-  # @yieldparam [String] terget Path for resulting file
+  # @yieldparam [String] target Path for resulting file
   # @yieldreturn [void] ignored
   # @return [Array<String, String, String>] full path, inner path, target url
   def cached_file context, prefix, digest, suffix
@@ -68,7 +68,7 @@ module JekyllIS::Images::Image::Cache
     if File.file?(full)
       [ full, path, url ]
     else
-      [ nil, nil, nil ]
+      [  nil,  nil, nil ]
     end
   end
 
@@ -104,6 +104,7 @@ module JekyllIS::Images::Image::Cache
     sha256.hexdigest
   end
 
+  # @api private
   # @param [JekyllIS::Images::Context] context
   # @return [void]
   def restore_static_files context
@@ -115,6 +116,21 @@ module JekyllIS::Images::Image::Cache
         url = "/#{ context.target_path_prefix }/#{ file }"
         context.site.static_files << IS::StaticFile::new(context.site, '/', url, source: "#{ context.cache_path }/#{ GEN }/#{ file }")
       end
+    end
+  end
+
+  # @api private
+  # @param [JekyllIS::Images::Context] context
+  # @return [void]
+  def clean_unused_files context
+    cache_path = context.site.in_source_dir context.cache_path
+    cache_files = Dir[ "#{ cache_path }/**/*" ].select { File.file? it }
+    static_files = context.site.static_files.map(&:path).map { it.start_with?('/') ? it : context.site.in_source_dir(it) }
+    orphan_files = cache_files - static_files
+    File.delete(*orphan_files)
+    Jekyll::logger.info 'jekyll-is-images', "Cleanup: #{ orphan_files.size } files deleted."
+    Dir[ "#{ cache_path }/**/*" ].select { File.directory? it }.reverse_each do |dir|
+      Dir.rmdir dir if (Dir.entries(dir) - %w[. ..]).empty?
     end
   end
 

@@ -13,10 +13,13 @@ module JekyllIS::Images::Context::Error
 
   private_constant :ABORT_KEY
 
+  # @return [Boolean]
   def abort_on_error?
     @abort_on_error ||= config(ABORT_KEY)
   end
 
+  # @param [String] message
+  # @return [void]
   def error message
     if abort_on_error?
       Jekyll::logger.abort_with caller_locations(1, 1).first.label, message
@@ -25,6 +28,8 @@ module JekyllIS::Images::Context::Error
     end
   end
 
+  # @param [String] message
+  # @return [void]
   def warning message
     Jekyll::logger.warn caller_locations(1, 1).first.label, message
   end

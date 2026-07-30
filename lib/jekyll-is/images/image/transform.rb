@@ -14,6 +14,10 @@ module JekyllIS::Images::Image::Transform
   include JekyllIS::Images::Image::Cache
   include JekyllIS::Images::Image::Magick
 
+  # @param [JekyllIS::Images::Context] context
+  # @param [String] source
+  # @param [Hash] params
+  # @return [JekyllIS::Images::Image::Info]
   def transform context, source, params
 
     # Проверяем на assets, возвращаем как есть, если так.

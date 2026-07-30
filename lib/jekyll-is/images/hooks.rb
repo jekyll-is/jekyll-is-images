@@ -13,6 +13,8 @@ module JekyllIS::Images::Hooks
     HOOK_PAGE_VAR = '__is_images_hook'
 
     # @api private
+    # @param [Jekyll::Site] site
+    # @return [void]
     def init_hooks site
 
       Jekyll::Hooks::register [ :pages, :documents ], :pre_render do |page, _|
@@ -35,14 +37,12 @@ module JekyllIS::Images::Hooks
           #  самостоятельно в шаблонах. Просто не использовать их при включенном плагие в целом — не имеет
           #  смысла.
           unless context.config('disable_auto_stuff')
-            # FIXME: вернуть загрузку без /plugins/
             assets = <<-HTML
               <!-- jekyll-is-images plugin stuff -->
-              <link rel="stylesheet" href="/css/plugins/is-images.css" />
+              <link rel="stylesheet" href="/css/is-images.css" />
               <script type="module" src="/js/is-images.js"></script>
               <!-- end of jekyll-is-images stuff -->
             HTML
-
             page.output.sub! '</head>', "#{ assets }\n</head>"
           end
         end
@@ -62,18 +62,10 @@ module JekyllIS::Images::Hooks
 
       Jekyll::Hooks::register :site, :post_write do |site|
         context = JekyllIS::Images::Context[site, nil]
-        is_live = site.config["watch"] || site.config["serving"] || site.incremental? || JekyllIS::Images.cached_environment
+        is_live = site.config['watch'] || site.config['serving'] || site.incremental? || JekyllIS::Images.cached_environment
         cache_path = site.in_source_dir context.cache_path
         if !is_live && File.directory?(cache_path)
-          cache_files = Dir["#{ cache_path }/**/*"].select { File.file?(it) }
-          static_files = site.static_files.map(&:path).map { it.start_with?("/") ? it : site.in_source_dir(it) }
-          orphan_files = cache_files - static_files
-          File.delete(*orphan_files)
-          Jekyll::logger.info "jekyll-is-images", "Cleanup: #{ orphan_files.size } files deleted."
-
-          Dir["#{ cache_path }/**/*"].select { File.directory?(it) }.reverse_each do |dir|
-            Dir.rmdir(dir) if (Dir.entries(dir) - %w[. ..]).empty?
-          end
+          JekyllIS::Images::Cache::clean_unused_files context
         end
       end
 

@@ -15,6 +15,9 @@ module JekyllIS::Images::Image::SEO
 
   private_constant :IMAGE_PARAMS
 
+  # @param [Jekyll::Site] site
+  # @param [Jekyll::Page] page
+  # @return [void]
   def replace_page_image site, page
     source = page.data['image']
     return source if source == nil || source.empty? || source.start_with?('/')

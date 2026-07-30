@@ -66,8 +66,11 @@ module JekyllIS::Images::Context::Config
   TARGET_PREFIX_KEY = 'target_prefix'
   CACHE_PATH_KEY = 'cache_path'
 
-  private_constant :CONFIG_KEY, :FORMATS_KEY, :OPTIONS_KEY, :TARGET_PREFIX_KEY, :CACHE_PATH_KEY
+  private_constant :DEFAULTS, :CONFIG_KEY, :FORMATS_KEY, :OPTIONS_KEY, :TARGET_PREFIX_KEY, :CACHE_PATH_KEY
 
+  # @param [Array<String>] path
+  # @param [Boolean] check_default
+  # @return [Object, nil]
   def config *path, check_default: false
 
     value = @page&.data&.dig CONFIG_KEY, *path
@@ -104,6 +107,9 @@ module JekyllIS::Images::Context::Config
 
   private_constant :DEFINE_KEYS
 
+  # @param [String] format
+  # @param [Hash] attrs
+  # @return [Options]
   def options format, attrs = {}
 
     default_values = DEFAULTS.dig(OPTIONS_KEY, format) || {}
@@ -130,14 +136,18 @@ module JekyllIS::Images::Context::Config
     Options::new quality, defines.map { |k, v| "#{k}=#{v}" }
   end
 
+  # @return [String]
   def target_path_prefix
     @target_path_prefix ||= config(TARGET_PREFIX_KEY)
   end
 
+  # @return [String]
   def cache_path
     @cache_path ||= config(CACHE_PATH_KEY)
   end
 
+  # @param [String] source
+  # @return [String]
   def detect_format source
     source_format = source&.split('#')&.first&.split('?')&.first&.split('.')&.last&.downcase
     source_format = 'jpeg' if source_format == 'jpg'
