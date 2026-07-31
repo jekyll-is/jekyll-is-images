@@ -196,7 +196,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     overlay['scale']  = attrs.delete("#{ prefix }-scale")  || @context.config(mode, 'scale')
     overlay['crop']   = attrs.delete("#{ prefix }-crop")   || @context.config(mode, 'crop')
     overlay['fit']    = attrs.delete("#{ prefix }-fit")    || @context.config(mode, 'fit')
-    overlay['lazy']   = attrs.delete("#{ prefix }-lazy")   || @context.config(mode, 'lazy')
+    overlay['lazy']   = attrs.delete("#{ prefix }-lazy")   || @context.config(mode, 'lazy')           # TODO: проверить, как работает lazy
     overlay['salt']   = attrs.delete('salt')
     overlay['attrs']  = attrs
     overlay['mode']   = prefix
