@@ -1,16 +1,36 @@
 # frozen_string_literal: true
 
-require_relative 'info'
+require 'is-static-files'
 
-module JekyllIS::Images::CSS
+require_relative 'assets'
+
+module JekyllIS::Images::Assets::CSS
 
   # @param [JekyllIS::Images::Context] context
-  # @return [String]
-  def generate context
+  # @return [IS::StaticFile]
+  def floats context
+    @floats ||= generate_floats(context)
+  end
+
+  # @param [JekyllIS::Images::Context] context
+  # @return [IS::StaticFile]
+  def loader context
+    @loader ||= generate_loader(context)
+  end
+
+  private
+
+  def floats_suffix context
+    max_width = context["max_text_width"] || 1920
+    min_width = context["min_text_width"] || 200
+    "#{ min_width }-#{ max_width }-#{ JekyllIS::Images::Info::VERSION }"
+  end
+
+  def generate_floats context
     max_width = context['max_text_width'] || 1920
     min_width = context['min_text_width'] || 200
     max_number = ((max_width - min_width).to_f / 50).ceil
-    start = <<~CSS
+    head = <<~CSS
       .__is_images__right, .__is_images__left {
         float: none;
         margin: 0px auto;
@@ -44,7 +64,15 @@ module JekyllIS::Images::CSS
         }
       CSS
     end.join("\n\n")
-    "#{ start }\n\n#{ main }"
+    IS::StaticFile::new context.site, '/', "/css/plugins/is-images/floats-#{ floats_suffix(context) }.css", content: "#{ head }\n\n#{ main }"
+  end
+
+  def generate_loader context
+    content = <<~CSS
+      @import url(/css/plugins/is-images-#{ JekyllIS::Images::Info::VERSION }.css) layer(plugins);
+      @import url(#{ floats(context).url }) layer(plugins);
+    CSS
+    IS::StaticFile::new context.site, '/', "/css/is-images-#{ floats_suffix(context) }.css", content: content
   end
 
   extend self

@@ -4,7 +4,7 @@ require 'is-kramdown-hooked'
 
 require_relative 'kramdown/processor'
 require_relative 'image'
-require_relative 'css'
+require_relative 'stuff'
 
 module JekyllIS::Images::Hooks
 
@@ -38,13 +38,7 @@ module JekyllIS::Images::Hooks
           #  самостоятельно в шаблонах. Просто не использовать их при включенном плагие в целом — не имеет
           #  смысла.
           unless context.config('disable_auto_stuff')
-            assets = <<-HTML
-              <!-- jekyll-is-images plugin stuff -->
-              <link rel="stylesheet" href="/css/is-images.css" />
-              <script type="module" src="/js/is-images.js"></script>
-              <!-- end of jekyll-is-images stuff -->
-            HTML
-            page.output.sub! '</head>', "#{ assets }\n</head>"
+            page.output.sub! '</head>', "#{ JekyllIS::Images::Assets::stuff(context) }\n</head>"
           end
         end
       end
@@ -54,12 +48,7 @@ module JekyllIS::Images::Hooks
         if File.directory?(site.in_source_dir(".jekyll-cache/Jekyll/Cache/Jekyll--Converters--Markdown"))
           JekyllIS::Images::Image::Cache::restore_static_files context
         end
-        assets_path = "#{ JekyllIS::Images::Info::PATH }/assets"
-        assets = Dir[ '**/*', base: assets_path ].select { File.file?("#{ assets_path }/#{ it }") }
-        assets.each do |file|
-          site.static_files << IS::StaticFile::new(site, '/', file, source: "#{ assets_path }/#{ file }")
-        end
-        site.static_files << IS::StaticFile::new(site, '/', '/css/plugins/is-images/floats.css', content: JekyllIS::Images::CSS::generate(context))
+        JekyllIS::Images::Assets::register context
       end
 
       Jekyll::Hooks::register :site, :post_write do |site|
