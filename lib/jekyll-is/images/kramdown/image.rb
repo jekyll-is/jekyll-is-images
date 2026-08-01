@@ -23,7 +23,8 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     @alt = @attrs.delete('alt')
     @src = @attrs.delete('src')
     @format = @attrs.delete('format') || @context.detect_format(@src)
-    @href = @attrs.delete('href') || context.config('default_link')
+    @href = @attrs.delete('href') || @context.config('default_link')
+    @href = @context.config("default_link") if @href == ''
     @href = false  if [ '0', 'false', 'no', 'none' ].include?(@href)
     @href = 'view' if [ '1', 'true', 'yes', 'auto' ].include?(@href)
     @title = @attrs.delete('title')

@@ -7,10 +7,11 @@ module JekyllIS::Images::Tags; end
 class JekyllIS::Images::Tags::Stuff < Liquid::Tag
 
   def initialize tag, text, tokens
-    super
+    super(tag, text, tokens)
     @tag = tag
   end
 
+  # @return [String]
   def render context
     ctx = JekyllIS::Images::Context[context.registers[:site], context.registers[:page]]
     case tag
