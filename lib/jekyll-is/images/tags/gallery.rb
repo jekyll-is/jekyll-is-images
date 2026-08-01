@@ -20,21 +20,21 @@ class JekyllIS::Images::Tags::Gallery < Liquid::Block
     element = document.root&.children&.first
     raise "Invalid markup: #{ @markup.inspect }" unless element
     super(context)
-    raise "Empty gallery: #{ @markup.inspect }" if context.registers[:is_images_gallery].size < 0
+    raise "Empty gallery: #{ @markup.inspect }" if context.registers[:is_images_gallery].empty?
     element.children = context.registers[:is_images_gallery]
     context.registers.delete :is_images_gallery
     site = context.registers[:site]
-    page = context.registers[:page]
+    page = context.registers[:page].instance_variable_get('@obj')
     cont = JekyllIS::Images::Context[site, page]
     gallery = JekyllIS::Images::Kramdown::Figure::new cont
     gallery.apply element
     if context.registers[:is_images_to_latex]
-      figure.to_latex
+      gallery.to_latex
     else
-      figure.to_html
+      gallery.to_html
     end
   end
 
 end
 
-Liquid::Template::register_tag 'is_gallery', JekyllIS::Images::Tags::Gallery
+Liquid::Template::register_tag 'gallery', JekyllIS::Images::Tags::Gallery

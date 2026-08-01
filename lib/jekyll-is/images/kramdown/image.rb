@@ -129,6 +129,8 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     { format:, options:, width:, height:, scale:, crop:, fit:, salt: }
   end
 
+  # TODO: подумать, как добавить view-background и view-padding
+
   def view_transform_parameters overlay
     attrs = @attrs.merge(overlay['attrs'] || {})
     format = attrs['view-format'] || @context.config('view', 'format') || @format

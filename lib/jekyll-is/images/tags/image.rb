@@ -16,14 +16,15 @@ class JekyllIS::Images::Tags::Image < Liquid::Tag
   # @return [String]
   def render context
     site = context.registers[:site]
-    page = context.registers[:page]
+    page = context.registers[:page].instance_variable_get('@obj')
     cont = JekyllIS::Images::Context[site, page]
     markdown = "![](){: #{ @markup } }"
     document = Kramdown::Document::new(markdown)
     element = document.root&.children&.first
+    element = element.children&.first if element&.type == :p
     raise "Invalid markup: #{ @markup.inspect }" unless element
     flags = element.options&.dig(:ial, :refs) || []
-    if flags.include?('figure')
+    if flags.delete('figure')
       raise "Invalid context — figure inside gallery: #{ @markup.inspect }" if context.registers[:is_images_gallery]
       para = Kramdown::Element::new :p
       para.children = [ element ]
@@ -50,4 +51,4 @@ class JekyllIS::Images::Tags::Image < Liquid::Tag
 
 end
 
-Liquid::Template::register_tag 'is_image', JekyllIS::Images::Tags::Image
+Liquid::Template::register_tag 'image', JekyllIS::Images::Tags::Image

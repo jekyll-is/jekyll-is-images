@@ -32,7 +32,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     @shift = @attrs.delete('shift')&.to_i
     @up = @attrs.delete('up')&.to_i
     @width = @attrs.delete('width')&.to_i
-    @modes = @attrs.delete('modes')&.split(',') || @context.config('gallery', 'modes')&.split(',') || []
+    @modes = @attrs.delete('modes')&.split(',')&.map(&:strip) || @context.config('gallery', 'modes')&.split(',') || []
     element.children.each do |child|
       if [ :a, :img ].include?(child.type)
         image = JekyllIS::Images::Kramdown::Image::new @context, figure: self
@@ -169,7 +169,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       labels = ''
       first = true
       @modes.each do |mode|
-        inputs += "<input class=\"__is_images_tab_radio __is_images_#{ mode }_radio\" type=\"radio\" id=\"#{ @id }-#{ mode }\" name=\"mode-#{ @id }\"#{ first ? 'checked' : '' }>"
+        inputs += "<input class=\"__is_images_tab_radio __is_images_#{ mode }_radio\" type=\"radio\" id=\"#{ @id }-#{ mode }\" name=\"mode-#{ @id }\"#{ first ? ' checked' : '' }>"
         first = false
         labels += "<label class=\"__is_images_tab_label __is_images_#{ mode }_label\" for=\"#{ @id }-#{ mode }\">#{ @context.config(mode, 'label') || MODES.dig(mode, :label) }</label>"
       end
@@ -233,7 +233,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     cnt_attrs['class'] = cnt_classes.join(' ')
     cnt_attrs['style'] = cnt_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
     # if navbar
-      nav = "<nav class=\"__is_images_gallery_navbar __is_images_#{ mode }_item\">#{ nav }</nav>"
+      nav = "<nav class=\"__is_images_gallery_navbar #{ modes.size == 1 ? '__is_images_only' : "__is_images_#{ mode }_item" }\">#{ nav }</nav>"
     # end
     "<div #{ cnt_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>#{ items.join("\n") }</div>#{ nav }"
   end

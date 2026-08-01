@@ -13,7 +13,7 @@ class JekyllIS::Images::Tags::Stuff < Liquid::Tag
 
   # @return [String]
   def render context
-    ctx = JekyllIS::Images::Context[context.registers[:site], context.registers[:page]]
+    ctx = JekyllIS::Images::Context[context.registers[:site], context.registers[:page].instance_variable_get('@obj')]
     case tag
     when 'is_images_stuff'
       "#{ css_loader(ctx) }\n#{ js_loader(ctx) }"
