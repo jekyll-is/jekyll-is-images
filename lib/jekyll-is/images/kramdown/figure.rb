@@ -72,7 +72,6 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
   end
 
   # @private
-  # TODO: брать подписи из конфига
   MODES = {
     'grid' => {
       child: 'cell',
@@ -172,7 +171,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
       @modes.each do |mode|
         inputs += "<input class=\"__is_images_tab_radio __is_images_#{ mode }_radio\" type=\"radio\" id=\"#{ @id }-#{ mode }\" name=\"mode-#{ @id }\"#{ first ? 'checked' : '' }>"
         first = false
-        labels += "<label class=\"__is_images_tab_label __is_images_#{ mode }_label\" for=\"#{ @id }-#{ mode }\">#{ MODES.dig(mode, :label) }</label>"
+        labels += "<label class=\"__is_images_tab_label __is_images_#{ mode }_label\" for=\"#{ @id }-#{ mode }\">#{ @context.config(mode, 'label') || MODES.dig(mode, :label) }</label>"
       end
       inner = "#{ inputs }<div class=\"__is_images_tab_control\">#{ labels }</div>#{ inner }"
     end
