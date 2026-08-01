@@ -37,4 +37,4 @@ class JekyllIS::Images::Tags::Gallery < Liquid::Block
 
 end
 
-Liquid::Template::register_tag 'gallery', JekyllIS::Images::Tags::Gallery
+Liquid::Template::register_tag 'is_gallery', JekyllIS::Images::Tags::Gallery
