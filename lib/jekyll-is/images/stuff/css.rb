@@ -51,14 +51,14 @@ module JekyllIS::Images::Assets::CSS
 
             &.__is_images__right {
               float: right;
-              margin-top: calc(0px - var(--is-images-up, 0px));
-              margin-right: calc(0px - min(var(--is-images-shift, 0px), calc(50vw - 50cqw)));
+              margin-top: calc(0px - var(--is-images-up, 0px)) !important;
+              margin-right: calc(0px - min(var(--is-images-shift, 0px), calc(50vw - 50cqw))) !important;
             }
 
             &.__is_images__left {
               float: left;
-              margin-top: calc(0px - var(--is-images-up, 0px));
-              margin-left: calc(0px - min(var(--is-images-shift, 0px), calc(50vw - 50cqw)));
+              margin-top: calc(0px - var(--is-images-up, 0px)) !important;
+              margin-left: calc(0px - min(var(--is-images-shift, 0px), calc(50vw - 50cqw))) !important;
             }
           }
         }
