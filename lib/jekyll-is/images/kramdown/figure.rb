@@ -233,7 +233,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
     cnt_attrs['class'] = cnt_classes.join(' ')
     cnt_attrs['style'] = cnt_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
     # if navbar
-      nav = "<nav class=\"__is_images_gallery_navbar #{ modes.size == 1 ? '__is_images_only' : "__is_images_#{ mode }_item" }\">#{ nav }</nav>"
+      nav = "<nav class=\"__is_images_gallery_navbar #{ @modes.size == 1 ? '__is_images_only' : "__is_images_#{ mode }_item" }\">#{ nav }</nav>"
     # end
     "<div #{ cnt_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>#{ items.join("\n") }</div>#{ nav }"
   end
