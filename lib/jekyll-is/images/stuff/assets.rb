@@ -10,7 +10,7 @@ module JekyllIS::Images::Assets
     assets = Dir[ '**/*', base: assets_path ].select { File.file?("#{ assets_path }/#{ it }") }
     assets.each do |file|
       extension = File.extname file
-      target = file.sub /#{ extension }$/, "-#{ JekyllIS::Images::Info::VERSION }#{ extension }"
+      target = file.sub(/#{ extension }$/, "-#{ JekyllIS::Images::Info::VERSION }#{ extension }")
       site.static_files << IS::StaticFile::new(site, '/', target, source: "#{ assets_path }/#{ file }")
     end
     site.static_files << CSS::floats(context)
