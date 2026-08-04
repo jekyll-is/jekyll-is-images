@@ -17,6 +17,11 @@ class JekyllIS::Images::Tags::Image < Liquid::Tag
   def render context
     site = context.registers[:site]
     page = context.registers[:page].instance_variable_get('@obj')
+    unless page.is_a?(Jekyll::Document) || page.is_a?(Jekyll::Page)
+      path = context.registers.dig(:page, 'path')
+      page = site.pages.find { it.relative_path == path } || site.documents.find { it.relative_path == path }
+      raise "Page not found: #{ path.inspect }" unless page
+    end
     cont = JekyllIS::Images::Context[site, page]
     markdown = "![](){: #{ @markup } }"
     document = Kramdown::Document::new(markdown)

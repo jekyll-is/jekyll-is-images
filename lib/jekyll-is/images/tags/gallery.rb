@@ -25,6 +25,11 @@ class JekyllIS::Images::Tags::Gallery < Liquid::Block
     context.registers.delete :is_images_gallery
     site = context.registers[:site]
     page = context.registers[:page].instance_variable_get('@obj')
+    unless page.is_a?(Jekyll::Document) || page.is_a?(Jekyll::Page)
+      path = context.registers.dig(:page, "path")
+      page = site.pages.find { it.relative_path == path } || site.documents.find { it.relative_path == path }
+      raise "Page not found: #{path.inspect}" unless page
+    end
     cont = JekyllIS::Images::Context[site, page]
     gallery = JekyllIS::Images::Kramdown::Figure::new cont
     gallery.apply element
