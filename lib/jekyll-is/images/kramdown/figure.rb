@@ -144,6 +144,7 @@ class JekyllIS::Images::Kramdown::Figure < JekyllIS::Images::Kramdown::Value
 
     styles = @styles.dup
     styles['shape-outside'] = "url(#{ single_url })" if single_url && @shaped
+    styles['--is-images-width'] = "#{ @width }px" if @width
     styles['--is-images-shift'] = "#{ @shift }px" if @shift
     styles['--is-images-up'] = "#{ @up }px" if @up
 
