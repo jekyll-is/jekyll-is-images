@@ -125,7 +125,7 @@ module JekyllIS::Images::Image::Cache
   def clean_unused_files context
     cache_path = context.site.in_source_dir context.cache_path
     cache_files = Dir[ "#{ cache_path }/**/*" ].select { File.file? it }
-    static_files = context.site.static_files.map(&:path).map { it.start_with?('/') ? it : context.site.in_source_dir(it) }
+    static_files = context.site.static_files.map(&:path).select { it.is_a?(String) }.map { it.start_with?('/') ? it : context.site.in_source_dir(it) }
     orphan_files = cache_files - static_files
     File.delete(*orphan_files)
     Jekyll::logger.info 'jekyll-is-images', "Cleanup: #{ orphan_files.size } files deleted."
