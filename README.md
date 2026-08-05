@@ -33,7 +33,7 @@ and other build systems. Thus, when changing one page, it will not be necessary 
 
 + The plugin is designed and tested **only under Linux**. Most likely, it will also work under other unix-like systems.
 
-+ There is one external dependency, i.e. not installed automatically via `bundle install` — **ImageMagick** version 6 or 7.
++ There is one external dependency, i.e. not installed automatically via `bundle install` — **ImageMagick** version 7.
 
 ### Direct Setup
 
