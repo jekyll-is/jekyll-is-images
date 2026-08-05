@@ -45,14 +45,15 @@ module JekyllIS::Images::Image::Magick
   # @yieldparam [MiniMagick::Tool] cmd
   # @yieldreturn [void] ignored
   # @return [void]
-  def magick_generate target, format: 'png', width:, height:, background: 'none', foreground: nil, canvas: true
+  def magick_generate target, format: 'png32', width:, height:, background: 'none', foreground: nil, canvas: true
     MiniMagick::convert do |cmd|
       cmd.size "#{ width }x#{ height }"
       cmd.background background if background
       cmd.fill foreground if foreground
-      cmd << "canvas:" if canvas
+      cmd << 'canvas:' if canvas
       yield cmd if block_given?
       cmd.format format
+      cmd.alpha 'set'
       cmd << "#{ format }:#{ target }"
     end
   end
