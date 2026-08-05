@@ -67,6 +67,7 @@ module JekyllIS::Images::Image::SEO
         end
         bottom = background_image context, params[:bottom_height], params
         result = base.composite bottom do |img|
+          img.compose 'Over'
           img.gravity 'South'
           img.geometry "+0+#{ params[:padding] }"
         end
@@ -77,6 +78,7 @@ module JekyllIS::Images::Image::SEO
         end
         top = background_image context, params[:top_height], params
         result = result.composite top do |img|
+          img.compose 'Over'
           img.gravity 'North'
           img.geometry "+0+#{ params[:padding] }"
         end

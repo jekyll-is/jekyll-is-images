@@ -47,9 +47,9 @@ module JekyllIS::Images::Image::Magick
   # @return [void]
   def magick_generate target, format: 'png32', width:, height:, background: 'none', foreground: nil, canvas: true
     MiniMagick::convert do |cmd|
-      cmd.size "#{ width }x#{ height }"
       cmd.background background if background
       cmd.fill foreground if foreground
+      cmd.size "#{ width }x#{ height }"
       cmd << 'canvas:' if canvas
       yield cmd if block_given?
       cmd.format format
