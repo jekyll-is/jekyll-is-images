@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'cgi'
+
 require_relative 'value'
 require_relative '../image'
 
@@ -113,7 +115,7 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
   private
 
   def process_caption caption
-    @context.markdown.convert(caption).chomp.delete_prefix("<p>").delete_suffix("</p>")
+    CGI.escapeHTML(@context.markdown.convert(caption).chomp.delete_prefix("<p>").delete_suffix("</p>"))
   end
 
   def transform_parameters overlay

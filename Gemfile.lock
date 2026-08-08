@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jekyll-is-images (0.8.0.8)
+    jekyll-is-images (0.8.0.10)
       is-kramdown-hooked (~> 0.8.6)
       is-static-files (~> 0.8.0)
       kramdown (~> 2.5)
@@ -95,7 +95,7 @@ GEM
       rb-inotify (~> 0.9, >= 0.9.10)
     logger (1.7.0)
     mercenary (0.4.0)
-    mini_magick (5.3.2)
+    mini_magick (5.3.3)
       logger
     nokogiri (1.19.4-aarch64-linux-gnu)
       racc (~> 1.4)
@@ -208,7 +208,7 @@ CHECKSUMS
   is-kramdown-hooked (0.8.6) sha256=c0241e05cfa2abd433b5d35467aa6911f71efeaa54899e633492aacb817d3a7f
   is-static-files (0.8.0.4) sha256=6edc7af33b80db15e0c54ffc51fcba17168eab293a8472f1996541df15c47a07
   jekyll (4.4.1) sha256=4c1144d857a5b2b80d45b8cf5138289579a9f8136aadfa6dd684b31fe2bc18c1
-  jekyll-is-images (0.8.0.8)
+  jekyll-is-images (0.8.0.10)
   jekyll-sass-converter (3.1.0) sha256=83925d84f1d134410c11d0c6643b0093e82e3a3cf127e90757a85294a3862443
   jekyll-watch (2.2.1) sha256=bc44ed43f5e0a552836245a54dbff3ea7421ecc2856707e8a1ee203a8387a7e1
   json (2.21.2) sha256=1f1d3b7cf2b3ba1a69beca0bb6db13d5438b80bff3cd54cdaaa620b9b07c1c6a
@@ -218,7 +218,7 @@ CHECKSUMS
   listen (3.10.0) sha256=c6e182db62143aeccc2e1960033bebe7445309c7272061979bb098d03760c9d2
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   mercenary (0.4.0) sha256=b25a1e4a59adca88665e08e24acf0af30da5b5d859f7d8f38fba52c28f405138
-  mini_magick (5.3.2) sha256=a7ef54b480b15283c396eb8343d9e088471f54b31d9974cb7e523cc57598609f
+  mini_magick (5.3.3) sha256=b3beed8a8cef36bd03666365f14b89cd344da0ecd373af53e617c71bfd426aab
   nokogiri (1.19.4-aarch64-linux-gnu) sha256=1269fb644a6de405057a53dd5c762b1209b43ca7424f839454d3dbc677c31a8f
   nokogiri (1.19.4-aarch64-linux-musl) sha256=35c65b9ce72b3bb03207bdbe7067915019dc18c1b9b59139684bd6690fdd01af
   nokogiri (1.19.4-arm-linux-gnu) sha256=a301313e38bb065d68239e79734bcd6f56fb6efaacebde29e9abf2a4735340ca
