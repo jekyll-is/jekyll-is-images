@@ -79,7 +79,7 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     img_attrs = {}
     img_attrs['id'] = @id if @id
     img_attrs['src'] = image.url
-    img_attrs['alt'] = @alt if @alt
+    img_attrs['alt'] = CGI.escapeHTML(@alt) if @alt
     img_attrs['class'] = img_classes.join(' ')
     img_attrs['style'] = img_styles.map { |k, v| "#{ k }:#{ v };" }.join('')
     img_attrs['loading'] = 'lazy' if @lazy || overlay['lazy']
@@ -106,7 +106,7 @@ class JekyllIS::Images::Kramdown::Image < JekyllIS::Images::Kramdown::Value
     else
       wrp_tag = 'span'
     end
-    wrp_attrs['title'] = @title if @title
+    wrp_attrs['title'] = CGI.escapeHTML(@title) if @title
     wrp_attrs['class'] = '__is_images_wrapper'
 
     "<#{ wrp_tag } #{ wrp_attrs.map { |k, v| "#{ k }=\"#{ v }\"" }.join(' ') }>#{ img }</#{ wrp_tag }>"
