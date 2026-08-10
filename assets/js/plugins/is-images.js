@@ -36,10 +36,18 @@ export function initSlidesNavBar() {
             const siblings = link.parentElement.querySelectorAll("a");
             siblings.forEach((a) => a.classList.remove("active"));
             link.classList.add("active");
+            // setTimeout(() => {
+            history.replaceState(
+              null,
+              null,
+              window.location.href.split("#")[0],
+            );
+            // window.location.hash = ''
+            // }, 50);
           }
-          if (window.location.hash !== `#${slideId}`) {
-            history.replaceState(null, null, `#${slideId}`);
-          }
+          // if (window.location.hash !== `#${slideId}`) {
+          //   history.replaceState(null, null, `#${slideId}`);
+          // }
         }
       });
     },
@@ -48,6 +56,22 @@ export function initSlidesNavBar() {
   document.querySelectorAll(".__is_images_slide_figure").forEach((slide) => {
     observer.observe(slide);
   });
+  document
+    .querySelectorAll("__is_images_gallery_navbar a")
+    .forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const target = document.querySelector(button.href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ block: "start" });
+            history.replaceState(
+              null,
+              null,
+              window.location.href.split("#")[0]
+            );
+        }
+      });
+    });
 }
 
 /*                                                                                        */
@@ -81,7 +105,7 @@ export function initViewBox() {
     spinner.className = "__is_images_viewbox_spinner";
 
     image.addEventListener("load", () => {
-      console.log({load: image});
+      console.log({ load: image });
       spinner.style.display = "none";
       image.classList.add("loaded");
       if (caption.textContent.trim() != "") {
@@ -128,7 +152,7 @@ export function initViewBox() {
       image.src = url;
       image.alt = img.alt;
       viewbox.classList.add("active");
-      console.log({viewbox: viewbox});
+      console.log({ viewbox: viewbox });
     }
   });
 
