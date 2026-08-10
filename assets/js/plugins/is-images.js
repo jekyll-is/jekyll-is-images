@@ -36,18 +36,7 @@ export function initSlidesNavBar() {
             const siblings = link.parentElement.querySelectorAll("a");
             siblings.forEach((a) => a.classList.remove("active"));
             link.classList.add("active");
-            // setTimeout(() => {
-            history.replaceState(
-              null,
-              null,
-              window.location.href.split("#")[0],
-            );
-            // window.location.hash = ''
-            // }, 50);
           }
-          // if (window.location.hash !== `#${slideId}`) {
-          //   history.replaceState(null, null, `#${slideId}`);
-          // }
         }
       });
     },
@@ -57,18 +46,15 @@ export function initSlidesNavBar() {
     observer.observe(slide);
   });
   document
-    .querySelectorAll("__is_images_gallery_navbar a")
+    .querySelectorAll(".__is_images_gallery_navbar a")
     .forEach((button) => {
+      console.log({button:button});
       button.addEventListener("click", (e) => {
-        const target = document.querySelector(button.href);
+        const href = button.getAttribute('href');
+        const target = document.querySelector(href);
         if (target) {
           e.preventDefault();
-          target.scrollIntoView({ block: "start" });
-            history.replaceState(
-              null,
-              null,
-              window.location.href.split("#")[0]
-            );
+          target.scrollIntoView({ behavior: 'smooth' });
         }
       });
     });
