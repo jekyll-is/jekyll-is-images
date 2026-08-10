@@ -14,6 +14,7 @@ module JekyllIS::Images::Image::Magick
   # @param [String, nil] resize
   # @return [void]
   def magick_convert target, source, format:, options:, crop: nil, resize: nil
+    raise 'Source is null' if source.nil? || source.empty?
     is_svg = File.extname(source).downcase == '.svg'
     MiniMagick::convert do |cmd|
       if is_svg
