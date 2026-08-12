@@ -7,7 +7,7 @@ end
 module JekyllIS::Images::Info
 
   NAME     = 'jekyll-is-images'
-  VERSION  = '0.8.0.12'
+  VERSION  = '0.8.0.14'
   SUMMARY  = 'Image preprocessor plugin for Jekyll'
   LICENSE  = 'LGPL-3.0-or-later'
   AUTHOR   = 'Ivan Shikhalev'

@@ -54,7 +54,7 @@ export function initSlidesNavBar() {
         const target = document.querySelector(href);
         if (target) {
           e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth' });
+          target.scrollIntoView({ behavior: 'smooth', block:'nearest', inline:'nearest' });
         }
       });
     });
