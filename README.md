@@ -59,9 +59,7 @@ And disable automatic loading by setting a parameter in `_config.yml`:
 
 For the main features tied to intercepting markdown markup to work, you also need to enable a custom markdown parser in the config.
 
-    markdown: kramdown
-    kramdown:
-      input: ISKram
+    markdown: Hookdown
 
 It is inherited from the standard `Kramdown` used in Jekyll by default, and its behavior is otherwise unmodified.
 
@@ -541,11 +539,11 @@ under the same LGPL or GPL.
 
 ## Roadmap
 
-Current version is **0.8.0**.
+Current version is **0.8.2**.
 
 Plans for next versions:
 
-+ **0.8.2** — implement "page card" — a liquid tag for inserting a link to a page with an image and title.
++ **0.8.4** — implement "page card" — a liquid tag for inserting a link to a page with an image and title.
 
 + **0.9.x**
 
