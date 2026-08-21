@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'is-kramdown-hooked'
+require 'jekyll-is-hookdown'
 
 require_relative 'kramdown/processor'
 require_relative 'image'
@@ -10,28 +10,20 @@ module JekyllIS::Images::Hooks
 
   class << self
 
-    # @private
-    HOOK_PAGE_VAR = '__is_images_hook'
-
     # @api private
     # @param [Jekyll::Site] site
     # @return [void]
     def init_hooks site
 
-      Jekyll::Hooks::register [ :pages, :documents ], :pre_render do |page, _|
-        if !page.data.dig('is_images', 'disable')
-          page.data[HOOK_PAGE_VAR] = Kramdown::Parser::ISKram::register_post_parse_hook do |parser|
-            processor = JekyllIS::Images::Kramdown::Processor::new site, page
-            processor.process parser.root
-          end
-          JekyllIS::Images::Image.replace_page_image site, page
+      Jekyll::Hooks::register [ :pages, :documents ], :post_parse do |page, document|
+        unless page.data.dig('is_images', 'disable')
+          processor = JekyllIS::Images::Kramdown::Processor::new site, page
+          processor.process document.root
+          JekyllIS::Images::Image::replace_page_image site, page
         end
       end
 
       Jekyll::Hooks::register [ :pages, :documents ], :post_render do |page, _|
-        hook = page.data[HOOK_PAGE_VAR]
-        Kramdown::Parser::ISKram::unregister_post_parse_hook hook if hook
-
         unless page.data.dig('is_images', 'disable')
           context = JekyllIS::Images::Context[site, page]
           # Следует использовать is_images.disable_auto_stuff для того, чтобы те же самые линки разместить
@@ -77,11 +69,6 @@ module JekyllIS::Images
     attr_accessor :cached_environment
 
     # @private
-    def allowed? site
-      site.config.dig('kramdown', 'input') == 'ISKram'
-    end
-
-    # @private
     def disabled? site
       !!site.config.dig('is_images', 'disabled')
     end
@@ -91,7 +78,7 @@ module JekyllIS::Images
 end
 
 Jekyll::Hooks::register :site, :after_init do |site|
-  if JekyllIS::Images::allowed?(site)
+  if JekyllIS::Hookdown::enabled?
     next if JekyllIS::Images::disabled?(site)
     unless site.config[JekyllIS::Images::HOOK_CONFIG_VAR]
       jekyll_cache = site.in_source_dir('.jekyll-cache/Jekyll/Cache/Jekyll--Converters--Markdown')
