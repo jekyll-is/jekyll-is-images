@@ -15,11 +15,16 @@ module JekyllIS::Images::Hooks
     # @return [void]
     def init_hooks site
 
+      Jekyll::Hooks::register [ :pages, :documents ], :pre_render do |page, _|
+        unless page.data.dig('is_images', 'disable')
+          JekyllIS::Images::Image::replace_page_image site, page
+        end
+      end
+
       Jekyll::Hooks::register [ :pages, :documents ], :post_parse do |page, document|
         unless page.data.dig('is_images', 'disable')
           processor = JekyllIS::Images::Kramdown::Processor::new site, page
           processor.process document.root
-          JekyllIS::Images::Image::replace_page_image site, page
         end
       end
 
