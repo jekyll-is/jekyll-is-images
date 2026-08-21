@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'nokogiri', '~> 1.19.4'
   s.add_dependency 'is-static-files', '~> 0.8.0'
   # s.add_dependency 'is-kramdown-hooked', '~> 0.8.6'
-  s.add_dependency 'jekyll-is-hookdown', '~> 0.8.0.2'
+  s.add_dependency 'jekyll-is-hookdown', '~> 0.8.0.4'
 
   s.add_development_dependency 'rspec', '~> 3.13'
   s.add_development_dependency 'rake', '~> 13.3'

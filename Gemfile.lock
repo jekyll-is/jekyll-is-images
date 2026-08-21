@@ -1,9 +1,9 @@
 PATH
   remote: .
   specs:
-    jekyll-is-images (0.8.2.4)
+    jekyll-is-images (0.8.2.5)
       is-static-files (~> 0.8.0)
-      jekyll-is-hookdown (~> 0.8.0.2)
+      jekyll-is-hookdown (~> 0.8.0.4)
       kramdown (~> 2.5)
       mini_magick (~> 5.3.2)
       nokogiri (~> 1.19.4)
@@ -77,7 +77,7 @@ GEM
       safe_yaml (~> 1.0)
       terminal-table (>= 1.8, < 4.0)
       webrick (~> 1.7)
-    jekyll-is-hookdown (0.8.0.2)
+    jekyll-is-hookdown (0.8.0.4)
       jekyll (~> 4.4)
       kramdown (~> 2.5)
     jekyll-sass-converter (3.1.0)
@@ -208,8 +208,8 @@ CHECKSUMS
   i18n (1.15.2) sha256=00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5
   is-static-files (0.8.0.4) sha256=6edc7af33b80db15e0c54ffc51fcba17168eab293a8472f1996541df15c47a07
   jekyll (4.4.1) sha256=4c1144d857a5b2b80d45b8cf5138289579a9f8136aadfa6dd684b31fe2bc18c1
-  jekyll-is-hookdown (0.8.0.2) sha256=75a9e33f4d8837e49db6a92af7122f909736ace637ec24ed57711a7689576a25
-  jekyll-is-images (0.8.2.4)
+  jekyll-is-hookdown (0.8.0.4) sha256=9975d85a56d94fc0890fd1f09b4d198cb4c9a6c6fe686b4456fbcd4ffc616d31
+  jekyll-is-images (0.8.2.5)
   jekyll-sass-converter (3.1.0) sha256=83925d84f1d134410c11d0c6643b0093e82e3a3cf127e90757a85294a3862443
   jekyll-watch (2.2.1) sha256=bc44ed43f5e0a552836245a54dbff3ea7421ecc2856707e8a1ee203a8387a7e1
   json (2.21.2) sha256=1f1d3b7cf2b3ba1a69beca0bb6db13d5438b80bff3cd54cdaaa620b9b07c1c6a
