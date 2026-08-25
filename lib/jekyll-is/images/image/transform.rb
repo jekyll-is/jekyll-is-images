@@ -82,7 +82,7 @@ module JekyllIS::Images::Image::Transform
               file.write chunk
             end
           end
-        when Net::HTTPRedirect
+        when Net::HTTPRedirection
           location = response['location']
           new_url = URI.join(uri.to_s, location).to_s
           return download_file context, new_url, target, limit - 1
