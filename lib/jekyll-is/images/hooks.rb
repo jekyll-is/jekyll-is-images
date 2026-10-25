@@ -34,7 +34,7 @@ module JekyllIS::Images::Hooks
           # Следует использовать is_images.disable_auto_stuff для того, чтобы те же самые линки разместить
           #  самостоятельно в шаблонах. Просто не использовать их при включенном плагие в целом — не имеет
           #  смысла.
-          unless context.config('disable_auto_stuff')
+          unless context.config('disable_auto_stuff') || page.output.frozen?
             page.output.sub! '</head>', "#{ JekyllIS::Images::Assets::stuff(context) }\n</head>"
           end
         end
