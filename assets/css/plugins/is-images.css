@@ -10,7 +10,9 @@
   figcaption {
     padding: 5px;
     margin: 5px;
-    font-family: "PT Sans Caption";
+    font-family: var(--figcaption-family), system-ui, sans-serif;
+    font-stretch: var(--figcaption-stretch);
+    font-width: var(--figcaption-stretch);
     text-align: center;
     width: 100%;
   }
@@ -79,7 +81,9 @@
     padding: 5px;
     margin: 5px;
     border-radius: 10px;
-    font-family: "PT Sans Caption";
+    font-family: var(--figcaption-family), system-ui, sans-serif;
+    font-stretch: var(--figcaption-stretch);
+    font-width: var(--figcaption-stretch);
     text-align: center;
     background-color: #ddd;
     width: 100%;
@@ -267,7 +271,9 @@
 
 .__is_images_viewbox_caption {
   color: white;
-  font-family: "PT Sans Caption", "Verdana", sans-serif;
+  font-family: var(--figcaption-family), system-ui, sans-serif;
+  font-stretch: var(--figcaption-stretch);
+  font-width: var(--figcaption-stretch);
   font-size: 1.2rem;
   text-align: center;
   max-width: 80%;
